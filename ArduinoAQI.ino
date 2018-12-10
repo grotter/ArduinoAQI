@@ -9,7 +9,7 @@
 #include "src/WiFiManager/WiFiManager.h"
 #include "private/config.h"
 
-#define JSON_BUFFER 1200
+#define JSON_BUFFER 5000
 
 Button resetButton(12);
 WiFiManager wifiManager;
@@ -79,37 +79,36 @@ void onThingspeakRegistration() {
 }
 
 boolean configThingspeak(String json) {
+    // try parsing the JSON
     StaticJsonBuffer<JSON_BUFFER> jsonBuffer;
 
     char jsonChar[JSON_BUFFER];
     json.toCharArray(jsonChar, JSON_BUFFER);
     
     JsonObject& root = jsonBuffer.parseObject(jsonChar);
-    
-    if (root.success()) {
-      // iterate our thingspeak registration channel and match MAC addresses
-      JsonArray& feeds = root["feeds"];
-      
-      for (JsonObject& feed : feeds) {
-        if (feed.containsKey("field1") && feed.containsKey("field2")  && feed.containsKey("field3")) {
-          const char* macAddress = feed["field1"];
+    if (!root.success()) return false;
 
-          if (String(macAddress) == getMacAddress()) {
-            // match found, set configuration
-            const char* channelId = feed["field2"];
-            thingspeakChannelId = atoi(channelId);
+    JsonArray& feeds = root["feeds"];
+    if (!feeds.success()) return false;
 
-            const char* writeKey = feed["field3"];
-            thingspeakWriteKey = String(writeKey);
-            break;
-          }
+    // iterate our ThingSpeak registration channel and match MAC addresses
+    for (JsonObject& feed : feeds) {
+      if (feed.containsKey("field1") && feed.containsKey("field2")  && feed.containsKey("field3")) {
+        const char* macAddress = feed["field1"];
+
+        if (String(macAddress) == getMacAddress()) {
+          // match found, set configuration
+          const char* channelId = feed["field2"];
+          thingspeakChannelId = atoi(channelId);
+
+          const char* writeKey = feed["field3"];
+          thingspeakWriteKey = String(writeKey);
+          break;
         }
       }
-
-      return (thingspeakChannelId > 0);
     }
 
-    return false;
+    return (thingspeakChannelId > 0);
 }
 
 String getMacAddress() {
