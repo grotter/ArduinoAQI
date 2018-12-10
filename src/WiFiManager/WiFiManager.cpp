@@ -144,7 +144,7 @@ void WiFiManager::setupConfigPortal() {
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
   // server->on(String(F("/")), std::bind(&WiFiManager::handleRoot, this));
-  // server->on(String(F("/wifi")), std::bind(&WiFiManager::handleWifi, this, true));
+  server->on(String(F("/wifi")), std::bind(&WiFiManager::handleWifi, this, true));
   
   // grotter
   // set ssid select page as root
@@ -297,6 +297,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
     if (WiFi.SSID()) {
+      // DEBUG_WM(WiFi.SSID());
+
       DEBUG_WM(F("Using last saved values, should be faster"));
       //trying to fix connection in progress hanging
       ETS_UART_INTR_DISABLE();
@@ -311,6 +313,25 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 
   int connRes = waitForConnectResult();
   DEBUG_WM ("Connection result: ");
+  
+  switch (connRes) {
+    case WL_CONNECTED:
+      DEBUG_WM ( "WL_CONNECTED" );
+      break;
+          case WL_IDLE_STATUS:
+      DEBUG_WM ( "WL_IDLE_STATUS" );
+      break;
+          case WL_CONNECT_FAILED:
+      DEBUG_WM ( "WL_CONNECT_FAILED" );
+      break;
+          case WL_CONNECTION_LOST:
+      DEBUG_WM ( "WL_CONNECTION_LOST" );
+      break;
+                case WL_DISCONNECTED:
+      DEBUG_WM ( "WL_DISCONNECTED" );
+      break;
+  }
+
   DEBUG_WM ( connRes );
   //not connected, WPS enabled, no pass - first attempt
   #ifdef NO_EXTRA_4K_HEAP

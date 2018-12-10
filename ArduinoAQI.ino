@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <DNSServer.h>
@@ -10,6 +11,7 @@
 #include "private/config.h"
 
 #define JSON_BUFFER 5000
+#define WIFI_VARIABLE_LENGTH 60
 
 Button resetButton(12);
 WiFiManager wifiManager;
@@ -20,19 +22,71 @@ unsigned long thingspeakChannelId = 0;
 
 void setup() {
   resetButton.begin();
-  Serial.begin(9600);
   
+  EEPROM.begin(512);
+  Serial.begin(9600);
+
   Serial.println("");
   Serial.println("Arduino AQI v1.0");
   Serial.println("");
-
+  
   wifiManager.setDebugOutput(false);
-  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.setConfigPortalTimeout(300);
   wifiManager.setAPCallback(onWifiConfig);
   wifiManager.setSaveConfigCallback(onWifiConfigComplete);
   wifiManager.autoConnect(ACCESS_POINT);
-
+  
   onWifiConnect();
+}
+
+void clearEEPROM() {
+  for (int i = 0 ; i < EEPROM.length() ; i++) {
+    EEPROM.write(i, 255);
+  }
+}
+
+void resetWifi() {  
+  Serial.println("Resetting wifi…");
+  WiFi.disconnect();
+  wifiManager.startConfigPortal(ACCESS_POINT);
+  
+  onWifiConnect();
+}
+
+void reconnectWifi() {
+    // check for saved credentials
+    if (isNull(0) || isNull(WIFI_VARIABLE_LENGTH)) {
+      Serial.println("No EEPROM-stored credentials. Back to config…");
+      resetWifi();
+      return;
+    }
+
+    // retrieve saved credentials
+    char ssid[WIFI_VARIABLE_LENGTH];
+    char password[WIFI_VARIABLE_LENGTH];
+    EEPROM.get(0, ssid);
+    EEPROM.get(WIFI_VARIABLE_LENGTH, password);
+    
+    // attempt connection
+    Serial.println("Attempting to reconnect to " + String(ssid) + "…");
+    WiFi.disconnect();
+    wifiManager.connectWifi(String(ssid), String(password));
+
+    // success
+    onWifiConnect();
+}
+
+void saveWifiCredentials() {
+  if (WiFi.status() != WL_CONNECTED) return;
+  
+  char mySsid[WIFI_VARIABLE_LENGTH];
+  char myPassword[WIFI_VARIABLE_LENGTH];
+
+  WiFi.SSID().toCharArray(mySsid, WIFI_VARIABLE_LENGTH);
+  WiFi.psk().toCharArray(myPassword, WIFI_VARIABLE_LENGTH);
+  
+  EEPROM.put(0, mySsid);
+  EEPROM.put(WIFI_VARIABLE_LENGTH, myPassword);
 }
 
 void onWifiConfig (WiFiManager *myWiFiManager) {
@@ -45,27 +99,25 @@ void onWifiConfigComplete () {
 }
 
 void onWifiConnect () {
+  // no connection, retry
+  if (WiFi.status() != WL_CONNECTED) {
+    reconnectWifi();
+    return;
+  }
+
+  // successfully joined as client
   Serial.println("onWifiConnect");
   Serial.println("MAC Address: " + getMacAddress());
   Serial.println("Connected to network: " + WiFi.SSID());
 
-  ThingSpeak.begin(client);
+  // save credentials to EEPROM
+  saveWifiCredentials();
 
-  String json = ThingSpeak.readRaw(THINGSPEAK_REGISTRY_CHANNEL_NUMBER, String("/feeds/?results=8000&api_key=") + THINGSPEAK_REGISTRY_API_KEY);
-  int statusCode = ThingSpeak.getLastReadStatus();
- 
-  if (statusCode == OK_SUCCESS) {
-    if (configThingspeak(json)) {
-      onThingspeakRegistration();
-    } else {
-      Serial.println("ThingSpeak registration failed!");
-    } 
-  } else {
-    Serial.println("ThingSpeak connection error!");
-  }
+  // load ThingSpeak config
+  loadThingspeakConfig();
 }
 
-void onThingspeakRegistration() {
+void onThingspeakConfig() {
   Serial.println("onThingspeakRegistration");
   Serial.println("thingspeakWriteKey: " + thingspeakWriteKey);
   Serial.println("thingspeakChannelId: " + String(thingspeakChannelId));
@@ -78,7 +130,24 @@ void onThingspeakRegistration() {
   }
 }
 
-boolean configThingspeak(String json) {
+void loadThingspeakConfig() {
+  ThingSpeak.begin(client);
+
+  String json = ThingSpeak.readRaw(THINGSPEAK_REGISTRY_CHANNEL_NUMBER, String("/feeds/?results=8000&api_key=") + THINGSPEAK_REGISTRY_API_KEY);
+  int statusCode = ThingSpeak.getLastReadStatus();
+ 
+  if (statusCode == OK_SUCCESS) {
+    if (setThingspeakConfig(json)) {
+      onThingspeakConfig();
+    } else {
+      Serial.println("ThingSpeak registration failed!");
+    } 
+  } else {
+    Serial.println("ThingSpeak connection error!");
+  }
+}
+
+bool setThingspeakConfig(String json) {
     // try parsing the JSON
     StaticJsonBuffer<JSON_BUFFER> jsonBuffer;
 
@@ -111,6 +180,21 @@ boolean configThingspeak(String json) {
     return (thingspeakChannelId > 0);
 }
 
+bool sendData(int number1, int number2) {
+  ThingSpeak.setField(1, number1);
+  ThingSpeak.setField(2, number2);
+
+  int x = ThingSpeak.writeFields(thingspeakChannelId, thingspeakWriteKey.c_str());
+  
+  return (x == 200);
+}
+
+bool isNull(int loc) {
+    // hack to check if first byte is 255 (assumed to be null)
+    int firstChar = EEPROM.read(loc);
+    return (firstChar == 255);
+}
+
 String getMacAddress() {
   String myMac;
   
@@ -125,22 +209,6 @@ String getMacAddress() {
   myMac += String(mac[0], HEX);
    
   return myMac; 
-}
-
-boolean sendData(int number1, int number2) {
-  ThingSpeak.setField(1, number1);
-  ThingSpeak.setField(2, number2);
-
-  int x = ThingSpeak.writeFields(thingspeakChannelId, thingspeakWriteKey.c_str());
-  
-  return (x == 200);
-}
-
-void resetWifi() {
-  Serial.println("Resetting wifi…");
-  WiFi.disconnect();
-  wifiManager.startConfigPortal(ACCESS_POINT);
-  onWifiConnect();
 }
 
 void loop() {
