@@ -23,8 +23,12 @@ void ArduinoAQIData::begin() {
   _onWifiConnect();
 }
 
+bool ArduinoAQIData::isConnected() {
+  return WiFi.status() == WL_CONNECTED;
+}
+
 bool ArduinoAQIData::write(int number1, int number2) {
-  if (WiFi.status() != WL_CONNECTED) {
+  if (!isConnected()) {
     Serial.println("No wifi connection, cancel data send.");
     return false;
   }
@@ -120,7 +124,7 @@ void ArduinoAQIData::_reconnectWifi() {
 
 void ArduinoAQIData::_saveWifiCredentials() {
   // only save validated credentials
-  if (WiFi.status() != WL_CONNECTED) return;
+  if (!isConnected()) return;
   
   char mySsid[WIFI_VARIABLE_LENGTH];
   char myPassword[WIFI_VARIABLE_LENGTH];
@@ -136,7 +140,7 @@ void ArduinoAQIData::_onWifiConnect () {
   Serial.println("_onWifiConnect");
   
   // no connection, retry
-  if (WiFi.status() != WL_CONNECTED) {
+  if (!isConnected()) {
     _reconnectWifi();
     return;
   }
