@@ -12,11 +12,14 @@
 
 #define JSON_BUFFER 5000
 #define WIFI_VARIABLE_LENGTH 60
+#define MAX_CONNECTION_ATTEMPTS 10
 
 Button resetButton(12);
-WiFiManager wifiManager;
 WiFiClient client;
+int connectionAttempts = 0;
+WiFiManager wifiManager;
 
+bool isRegistered = false;
 String thingspeakWriteKey = "";
 unsigned long thingspeakChannelId = 0;
 
@@ -54,30 +57,37 @@ void resetWifi() {
 }
 
 void reconnectWifi() {
-    // check for saved credentials
-    if (isNull(0) || isNull(WIFI_VARIABLE_LENGTH)) {
-      Serial.println("No EEPROM-stored credentials. Back to config…");
-      resetWifi();
-      return;
-    }
+  connectionAttempts++;
 
-    // retrieve saved credentials
-    char ssid[WIFI_VARIABLE_LENGTH];
-    char password[WIFI_VARIABLE_LENGTH];
-    EEPROM.get(0, ssid);
-    EEPROM.get(WIFI_VARIABLE_LENGTH, password);
-    
-    // attempt connection
-    Serial.println("Attempting to reconnect to " + String(ssid) + "…");
-    WiFi.disconnect();
-    wifiManager.connectWifi(String(ssid), String(password));
+  // only try a few times, otherwise reset button is blocked
+  if (connectionAttempts > MAX_CONNECTION_ATTEMPTS) {
+    connectionAttempts = 0;
+    Serial.println("Max connection attempts reached. Back to config…");
+    resetWifi();
+    return;
+  }
+  
+  // check for saved credentials
+  if (isNull(0) || isNull(WIFI_VARIABLE_LENGTH)) {
+    connectionAttempts = 0;
+    Serial.println("No EEPROM-stored credentials. Back to config…");
+    resetWifi();
+    return;
+  }
 
-    // @todo
-    // this blocks execution until a successful connect, so give up after five attempts;
-    // otherwise, reset button is disabled
-    
-    // success
-    onWifiConnect();
+  // retrieve saved credentials
+  char ssid[WIFI_VARIABLE_LENGTH];
+  char password[WIFI_VARIABLE_LENGTH];
+  EEPROM.get(0, ssid);
+  EEPROM.get(WIFI_VARIABLE_LENGTH, password);
+
+  // attempt connection
+  Serial.println("Attempting to reconnect to " + String(ssid) + "… (" + connectionAttempts + ")"); 
+  WiFi.disconnect();
+  wifiManager.connectWifi(String(ssid), String(password));
+  
+  // success
+  onWifiConnect();
 }
 
 void saveWifiCredentials() {
@@ -123,20 +133,8 @@ void onWifiConnect () {
   loadThingspeakConfig();
 }
 
-void onThingspeakConfig() {
-  Serial.println("onThingspeakRegistration");
-  Serial.println("thingspeakWriteKey: " + thingspeakWriteKey);
-  Serial.println("thingspeakChannelId: " + String(thingspeakChannelId));
-  Serial.println("");
-
-  if (sendData(101, 102)) {
-    Serial.println("Data sent to ThingSpeak");
-  } else {
-    Serial.println("ThingSpeak connection error!");
-  }
-}
-
 void loadThingspeakConfig() {
+  isRegistered = false;
   ThingSpeak.begin(client);
 
   String json = ThingSpeak.readRaw(THINGSPEAK_REGISTRY_CHANNEL_NUMBER, String("/feeds/?results=8000&api_key=") + THINGSPEAK_REGISTRY_API_KEY);
@@ -144,12 +142,13 @@ void loadThingspeakConfig() {
  
   if (statusCode == OK_SUCCESS) {
     if (setThingspeakConfig(json)) {
-      onThingspeakConfig();
+      isRegistered = true;
+      Serial.println("ThingSpeak registration complete.");
     } else {
       Serial.println("ThingSpeak registration failed!");
-    } 
+    }
   } else {
-    Serial.println("ThingSpeak connection error!");
+    Serial.println("Failed to load ThingSpeak config!");
   }
 }
 
@@ -186,13 +185,42 @@ bool setThingspeakConfig(String json) {
     return (thingspeakChannelId > 0);
 }
 
+/*
+if (sendData(101, 102)) {
+  Serial.println("Data written to ThingSpeak");
+} else {
+  Serial.println("ThingSpeak write error!");
+}
+*/
 bool sendData(int number1, int number2) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("No wifi connection, cancel data send.");
+    return false;
+  }
+  
+  if (!isRegistered) {
+    Serial.println("Not registered, cancel data send and load config…");
+    loadThingspeakConfig();
+    return false;
+  }
+
+  Serial.println("Sending data…");  
   ThingSpeak.setField(1, number1);
   ThingSpeak.setField(2, number2);
 
   int x = ThingSpeak.writeFields(thingspeakChannelId, thingspeakWriteKey.c_str());
   
-  return (x == 200);
+  if (x == ERR_BADAPIKEY || x == ERR_BADURL) {
+    Serial.println("Wrong API key or bad endpoint. Reload config…");
+    loadThingspeakConfig();
+    return false;
+  }
+
+  if (x == ERR_NOT_INSERTED) {
+    Serial.println("ThingSpeak write failed! Probably reached rate limit."); 
+  }
+  
+  return x == OK_SUCCESS;
 }
 
 bool isNull(int loc) {
