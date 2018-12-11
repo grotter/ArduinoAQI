@@ -72,11 +72,16 @@ void reconnectWifi() {
     WiFi.disconnect();
     wifiManager.connectWifi(String(ssid), String(password));
 
+    // @todo
+    // this blocks execution until a successful connect, so give up after five attempts;
+    // otherwise, reset button is disabled
+    
     // success
     onWifiConnect();
 }
 
 void saveWifiCredentials() {
+  // only save validated credentials
   if (WiFi.status() != WL_CONNECTED) return;
   
   char mySsid[WIFI_VARIABLE_LENGTH];
@@ -99,6 +104,8 @@ void onWifiConfigComplete () {
 }
 
 void onWifiConnect () {
+  Serial.println("onWifiConnect");
+  
   // no connection, retry
   if (WiFi.status() != WL_CONNECTED) {
     reconnectWifi();
@@ -106,7 +113,6 @@ void onWifiConnect () {
   }
 
   // successfully joined as client
-  Serial.println("onWifiConnect");
   Serial.println("MAC Address: " + getMacAddress());
   Serial.println("Connected to network: " + WiFi.SSID());
 
