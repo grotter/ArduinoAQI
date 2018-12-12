@@ -160,7 +160,7 @@ void ArduinoAQIData::_loadThingspeakConfig() {
   _isRegistered = false;
   ThingSpeak.begin(_client);
 
-  String json = ThingSpeak.readRaw(THINGSPEAK_REGISTRY_CHANNEL_NUMBER, String("/feeds/?results=8000&api_key=") + THINGSPEAK_REGISTRY_API_KEY);
+  String json = ThingSpeak.readRaw(THINGSPEAK_REGISTRY_CHANNEL_NUMBER, String("/feeds/?results=8000"), THINGSPEAK_REGISTRY_API_KEY);
   int statusCode = ThingSpeak.getLastReadStatus();
  
   if (statusCode == OK_SUCCESS) {
