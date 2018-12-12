@@ -162,7 +162,7 @@ void ArduinoAQIData::_loadThingspeakConfig() {
 
   String json = ThingSpeak.readRaw(THINGSPEAK_REGISTRY_CHANNEL_NUMBER, String("/feeds/?results=8000"), THINGSPEAK_REGISTRY_API_KEY);
   int statusCode = ThingSpeak.getLastReadStatus();
- 
+  
   if (statusCode == OK_SUCCESS) {
     if (_setThingspeakConfig(json)) {
       _isRegistered = true;
@@ -184,6 +184,7 @@ bool ArduinoAQIData::_setThingspeakConfig(String json) {
     
     JsonObject& root = jsonBuffer.parseObject(jsonChar);
     if (!root.success()) return false;
+    if (!root.containsKey("feeds")) return false;
 
     JsonArray& feeds = root["feeds"];
     if (!feeds.success()) return false;
@@ -205,11 +206,11 @@ bool ArduinoAQIData::_setThingspeakConfig(String json) {
       }
     }
 
-    return (_thingspeakChannelId > 0);
+    return _thingspeakChannelId > 0;
 }
 
 bool ArduinoAQIData::_isNull(int loc) {
     // hack to check if first byte is 255 (assumed to be null)
     int firstChar = EEPROM.read(loc);
-    return (firstChar == 255);
+    return firstChar == 255;
 }
