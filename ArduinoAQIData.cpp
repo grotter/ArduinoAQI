@@ -60,6 +60,8 @@ bool ArduinoAQIData::write(int number1, int number2) {
 
 void ArduinoAQIData::resetWifi() {  
   Serial.println("Resetting wifi…");
+
+  _connectionAttempts = 0;
   WiFi.disconnect();
   _wifiManager.startConfigPortal(ACCESS_POINT);
   
@@ -93,7 +95,6 @@ void ArduinoAQIData::_reconnectWifi() {
 
   // only try a few times, otherwise reset button is blocked
   if (_connectionAttempts > MAX_CONNECTION_ATTEMPTS) {
-    _connectionAttempts = 0;
     Serial.println("Max connection attempts reached. Back to config…");
     resetWifi();
     return;
@@ -101,7 +102,6 @@ void ArduinoAQIData::_reconnectWifi() {
   
   // check for saved credentials
   if (_isNull(0) || _isNull(WIFI_VARIABLE_LENGTH)) {
-    _connectionAttempts = 0;
     Serial.println("No EEPROM-stored credentials. Back to config…");
     resetWifi();
     return;
@@ -146,6 +146,8 @@ void ArduinoAQIData::_onWifiConnect () {
   }
 
   // successfully joined as client
+  _connectionAttempts = 0;
+  
   Serial.println("MAC Address: " + getMacAddress());
   Serial.println("Connected to network: " + WiFi.SSID());
 
