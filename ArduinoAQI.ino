@@ -24,6 +24,7 @@ void setup() {
   display.setBacklight(25);
 
   // connect to WiFi
+  // note: access point mode is blocking
   data.begin();
 
   // initialize WiFi reset button
