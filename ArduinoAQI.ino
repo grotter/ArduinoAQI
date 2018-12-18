@@ -63,9 +63,14 @@ void loop() {
 //
 //    Serial.println();
 
-    display.clear();
     float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
+    Category category = CalculateAQI::getCategory(aqi);
+    
+    display.clear();
     display.print(getNumberWithLeadingZeros(round(aqi)));
+
+//    Serial.println(category.level);
+//    Serial.println(category.color);
   }
       
   if (data.isConnected()) {

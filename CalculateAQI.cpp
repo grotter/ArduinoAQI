@@ -3,13 +3,6 @@
 
 #include "CalculateAQI.h"
 
-struct Breakpoints {
-    float iHi;
-    float iLo;
-    float cHi;
-    float cLo;
-};
-
 float CalculateAQI::getAQI(float I_high, float I_low, float C_high, float C_low, float C) {
   return (I_high - I_low) * (C - C_low) / (C_high - C_low) + I_low;
 }
@@ -62,20 +55,30 @@ struct Breakpoints CalculateAQI::getPM25Breakpoints(float cPM25) {
   return b;
 }
 
-char* CalculateAQI::getCategory(float AQI) {
+struct Category CalculateAQI::getCategory(float AQI) {
+  Category c;
+  c.level = "Unknown";
+  c.color = "black";
+  
   if (AQI <= 50) {
-    return "Good";
+    c.level = "Good";
+    c.color = "green";
   } else if (AQI > 50 && AQI <= 100) {
-    return "Moderate";
+    c.level = "Moderate";
+    c.color = "yellow";
   } else if (AQI > 100 && AQI <= 150) {
-    return "Unhealthy for Sensitive Groups";
+    c.level = "Unhealthy for Sensitive Groups";
+    c.color = "orange";
   } else if (AQI > 150 && AQI <= 200) {
-    return "Unhealthy";
+    c.level = "Unhealthy";
+    c.color = "red";
   } else if (AQI > 200 && AQI <= 300) {  
-    return "Very Unhealthy";
+    c.level = "Very Unhealthy";
+    c.color = "purple";
   } else if (AQI > 300) {
-    return "Hazardous";
+    c.level = "Hazardous";
+    c.color = "maroon";
   }
 
-  return "Unknown";
+  return c;
 }
