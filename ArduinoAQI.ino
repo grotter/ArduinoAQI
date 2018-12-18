@@ -3,6 +3,7 @@
 #include <SevenSegmentTM1637.h>
 #include <PMS.h>
 #include "ArduinoAQIData.h"
+#include "CalculateAQI.h"
 
 Button resetButton(PIN_RESET);
 SevenSegmentTM1637 display(PIN_LED_CLK, PIN_LED_DIO);
@@ -20,7 +21,7 @@ void setup() {
   Serial.println("");
   Serial.println("Arduino AQI v1.0");
   Serial.println("");
-
+  
   // LED_BUILTIN on the WeMos D1 R2 is inverted
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
@@ -28,7 +29,7 @@ void setup() {
   // initialize display
   display.begin();
   display.setBacklight(25);
-
+  
 //  // connect to WiFi
 //  // note: access point mode is blocking
 //  data.begin();
@@ -61,6 +62,10 @@ void loop() {
     Serial.println(pmsData.PM_AE_UG_10_0);
 
     Serial.println();
+
+    display.clear();
+    float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
+    display.print(getNumberWithLeadingZeros(round(aqi)));
   }
       
   if (data.isConnected()) {
@@ -78,10 +83,4 @@ void loop() {
       Serial.println("ThingSpeak write error!");
     }
   }
-
-//  // testing the display
-//  long num = random(0, 9999);
-//  display.clear();
-//  display.print(getNumberWithLeadingZeros(num));
-//  delay(300);
 }
