@@ -28,11 +28,11 @@ void setup() {
 
   // initialize display
   display.begin();
-  display.setBacklight(25);
+  display.setBacklight(10);
   
 //  // connect to WiFi
 //  // note: access point mode is blocking
-//  data.begin();
+  data.begin();
 
   // initialize WiFi reset button
   resetButton.begin();
@@ -52,16 +52,16 @@ char* getNumberWithLeadingZeros(long num, int displayLength) {
 
 void loop() {  
   if (pms.read(pmsData)) {
-    Serial.print("PM 1.0 (ug/m3): ");
-    Serial.println(pmsData.PM_AE_UG_1_0);
-
-    Serial.print("PM 2.5 (ug/m3): ");
-    Serial.println(pmsData.PM_AE_UG_2_5);
-
-    Serial.print("PM 10.0 (ug/m3): ");
-    Serial.println(pmsData.PM_AE_UG_10_0);
-
-    Serial.println();
+//    Serial.print("PM 1.0 (ug/m3): ");
+//    Serial.println(pmsData.PM_AE_UG_1_0);
+//
+//    Serial.print("PM 2.5 (ug/m3): ");
+//    Serial.println(pmsData.PM_AE_UG_2_5);
+//
+//    Serial.print("PM 10.0 (ug/m3): ");
+//    Serial.println(pmsData.PM_AE_UG_10_0);
+//
+//    Serial.println();
 
     display.clear();
     float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
