@@ -3,19 +3,8 @@
 <html lang="en">
 	<head>
 		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>
-		<title>Arduino AQI Setup</title>
+		<title>ArduinoAQI Setup</title>
 <!-- /HTTP_HEAD -->
-<!-- HTTP_STYLE -->
-		<style>
-			.c{text-align: center;}
-			div,input{padding:5px;font-size:1em;}
-			input{width:95%;}
-			body{text-align: center;font-family:verdana;}
-			button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;}
-			.q{float: right;width: 64px;text-align: right;}
-			.l{background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==") no-repeat left center;background-size: 1em;}
-		</style>
-<!-- /HTTP_STYLE -->
 <!-- HTTP_SCRIPT -->
 		<script>
 			function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();
@@ -30,7 +19,9 @@
 <!-- HTTP_HEAD_END -->
 	</head>
 	<body>
-		<div style="text-align:left;display:inline-block;min-width:260px;">
+		<div id='container'>
+			<h1>ArduinoAQI v1.0</h1>
+			<h2><span class='heart'>&#10084;</span> Antifascist Science Club</h2>
 <!-- /HTTP_HEAD_END -->
 
 			<!-- HTTP_PORTAL_OPTIONS -->
@@ -58,7 +49,7 @@
 			<!-- HTTP_FORM_START -->
 			<form method='get' action='wifisave'>
 				<input type='hidden' id='s' name='s' length=32 />
-				<input id='p' name='p' length=64 type='password' placeholder='password' />
+				<input id='p' name='p' length=64 type='password' placeholder='Password' />
 			<!-- /HTTP_FORM_START -->
 
 			<!-- HTTP_FORM_PARAM -->
@@ -70,10 +61,10 @@
 			</form>
 			<!-- /HTTP_FORM_END -->
 			<!-- HTTP_SCAN_LINK -->
-			<div class=\"c\"><a href=\"/wifi\">Rescan</a></div>
+			<div class=\"c\"><a href=\"/wifi\">Rescan networks</a></div>
 			<!-- /HTTP_SCAN_LINK -->
 			<!-- HTTP_SAVED -->
-			<div><h2>Configuration saved</h2><p>Attempting to connect to <strong> {ssid}</strong>&hellip;</p></div>
+			<div id='connecting'><h3>Configuration saved!</h3><p>Attempting to connect to <strong> {ssid}</strong>&hellip;</p></div>
 			<!-- /HTTP_SAVED -->
 
 

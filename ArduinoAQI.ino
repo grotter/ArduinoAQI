@@ -19,7 +19,7 @@ void setup() {
   pmsSerial.begin(9600);
 
   Serial.println("");
-  Serial.println("Arduino AQI v1.0");
+  Serial.println("ArduinoAQI v1.0");
   Serial.println("");
   
   // LED_BUILTIN on the WeMos D1 R2 is inverted
