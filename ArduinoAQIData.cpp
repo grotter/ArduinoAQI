@@ -27,7 +27,7 @@ bool ArduinoAQIData::isConnected() {
   return WiFi.status() == WL_CONNECTED;
 }
 
-bool ArduinoAQIData::write(int number1, int number2) {
+bool ArduinoAQIData::write(float number1, float number2, float number3, float number4) {
   if (!isConnected()) {
     Serial.println("No wifi connection, cancel data send.");
     return false;
@@ -42,6 +42,8 @@ bool ArduinoAQIData::write(int number1, int number2) {
   Serial.println("Sending data…");  
   ThingSpeak.setField(1, number1);
   ThingSpeak.setField(2, number2);
+  ThingSpeak.setField(3, number3);
+  ThingSpeak.setField(4, number4);
 
   int x = ThingSpeak.writeFields(_thingspeakChannelId, _thingspeakWriteKey.c_str());
   

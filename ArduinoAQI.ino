@@ -30,8 +30,8 @@ void setup() {
   display.begin();
   display.setBacklight(10);
   
-//  // connect to WiFi
-//  // note: access point mode is blocking
+  // connect to WiFi
+  // note: access point mode is blocking
   data.begin();
 
   // initialize WiFi reset button
@@ -50,29 +50,7 @@ char* getNumberWithLeadingZeros(long num, int displayLength) {
   return buffer;
 }
 
-void loop() {  
-  if (pms.read(pmsData)) {
-//    Serial.print("PM 1.0 (ug/m3): ");
-//    Serial.println(pmsData.PM_AE_UG_1_0);
-//
-//    Serial.print("PM 2.5 (ug/m3): ");
-//    Serial.println(pmsData.PM_AE_UG_2_5);
-//
-//    Serial.print("PM 10.0 (ug/m3): ");
-//    Serial.println(pmsData.PM_AE_UG_10_0);
-//
-//    Serial.println();
-
-    float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
-    Category category = CalculateAQI::getCategory(aqi);
-    
-    display.clear();
-    display.print(getNumberWithLeadingZeros(round(aqi)));
-
-//    Serial.println(category.level);
-//    Serial.println(category.color);
-  }
-      
+void loop() {
   if (data.isConnected()) {
     digitalWrite(LED_BUILTIN, LOW);
   } else {
@@ -80,12 +58,25 @@ void loop() {
   }
   
   if (resetButton.released()) {
-    // data.resetWifi();
+    data.resetWifi();
+  }
+  
+  if (pms.read(pmsData)) {
+    // calculate AQI
+    float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
+    Category category = CalculateAQI::getCategory(aqi);
 
-    if (data.write(101, 102)) {
+    // display
+    display.clear();
+    display.print(getNumberWithLeadingZeros(round(aqi)));
+
+    // send data to ThingSpeak
+    if (data.write(pmsData.PM_AE_UG_1_0, pmsData.PM_AE_UG_2_5, pmsData.PM_AE_UG_10_0, aqi)) {
       Serial.println("Data written to ThingSpeak");
     } else {
       Serial.println("ThingSpeak write error!");
     }
+
+    delay(15000);
   }
 }

@@ -24,7 +24,7 @@ class ArduinoAQIData {
     void resetWifi();
     String getMacAddress();
     bool isConnected();
-    bool write(int number1, int number2);
+    bool write(float number1, float number2, float number3, float number4);
   private:
     WiFiClient _client;
     WiFiManager _wifiManager;
