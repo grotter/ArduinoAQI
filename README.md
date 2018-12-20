@@ -1,2 +1,21 @@
-# Arduino AQI
+# ArduinoAQI v1.0
+### ♥ Antifascist Science Club
 
+This device continuously monitors atmospheric particulate matter. It sends sensor data to a registered ThingSpeak channel and displays realtime Air Quality Index [calculations](https://en.wikipedia.org/wiki/Air_quality_index#United_States). It was designed to be cheap and efficient.
+
+## Hardware
+* ESP8266 Arduino-compatible microcontroller. I‘m using a [WeMos D1 R2](https://wiki.wemos.cc/products:d1:d1), pins will need to be transposed for other controllers
+* [Plantower PMS5003](https://cdn-shop.adafruit.com/product-files/3686/plantower-pms5003-manual_v2-3.pdf) laser particle concentration sensor
+* [TM1637](http://dx.com/p/0-36-led-4-digit-display-module-for-arduino-black-blue-works-with-official-arduino-boards-254978) seven segment LED display module
+* A momentary switch for resetting the wifi configuration
+
+## Dependencies
+* A minimally hacked version (included in this repo) of tzapu’s [WiFiManager](https://github.com/tzapu/WiFiManager)
+* bblanchon‘s [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+* fu-hsi‘s [library](https://github.com/fu-hsi/PMS) for Plantower PMS x003 family sensors
+* bremme‘s [library](https://github.com/bremme/arduino-tm1637) for controlling TM1637 display modules
+* mathwork‘s [ThingSpeak library](https://github.com/mathworks/thingspeak-arduino)
+* madleech‘s [Button library](https://github.com/madleech/Button)
+
+## Wiring Diagram
+![ArduinoAQI wiring diagram](ArduinoAQI_bb.png)
