@@ -45,14 +45,27 @@ body {
 			display: block;
 		}
 
+		input::placeholder {
+			color: #000000;
+		}
+
 		a, button {
 			font-weight: bold;
 			text-align: center;
+			color: #ffffff;
+
+			&:active {
+				@include opacity(.6);
+			}
+		}
+
+		button {
+			background-color: #666666;
 		}
 
 		a {
 			background-color: #000000;
-			color: #ffffff;
+			
 		}
 
 		h1, h2 {

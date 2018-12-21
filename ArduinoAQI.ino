@@ -34,7 +34,7 @@ void setup() {
   
   // initialize WiFi reset button
   resetButton.begin();
-
+  
   // connect to WiFi
   // note: access point mode is blocking
   data.begin();
