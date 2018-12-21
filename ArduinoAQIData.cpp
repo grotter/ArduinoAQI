@@ -60,6 +60,10 @@ bool ArduinoAQIData::write(float number1, float number2, float number3, float nu
   if (x == ERR_NOT_INSERTED) {
     Serial.println("ThingSpeak write failed! Probably reached rate limit."); 
   }
+
+  if (x != OK_SUCCESS) {
+    Serial.println("Error code: " + String(x)); 
+  }
   
   return x == OK_SUCCESS;
 }
