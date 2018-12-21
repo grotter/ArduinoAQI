@@ -109,6 +109,8 @@ class WiFiManager
 
     int           connectWifi(String ssid, String pass);
 
+    void setSavedSsid(String ssid);
+    void setSavedPassword(String password);
   private:
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
@@ -125,6 +127,10 @@ class WiFiManager
     const char*   _apPassword             = NULL;
     String        _ssid                   = "";
     String        _pass                   = "";
+
+    String        _savedSsid                   = "";
+    String        _savedPassword                   = "";
+
     unsigned long _configPortalTimeout    = 0;
     unsigned long _connectTimeout         = 0;
     unsigned long _configPortalStart      = 0;

@@ -5,6 +5,10 @@ ArduinoAQIData::ArduinoAQIData() {
 }
 
 void ArduinoAQIData::begin() {
+  Credentials myCredentials = getSavedCredentials();
+  _wifiManager.setSavedSsid(myCredentials.ssid);
+  _wifiManager.setSavedPassword(myCredentials.password);
+  
   _wifiManager.setDebugOutput(false);
   _wifiManager.setConfigPortalTimeout(300);
 
@@ -86,6 +90,25 @@ String ArduinoAQIData::getMacAddress() {
   return myMac; 
 }
 
+Credentials ArduinoAQIData::getSavedCredentials() {
+  char ssid[WIFI_VARIABLE_LENGTH];
+  char password[WIFI_VARIABLE_LENGTH];
+  EEPROM.get(0, ssid);
+  EEPROM.get(WIFI_VARIABLE_LENGTH, password);
+
+  String mySsid = String(ssid);
+  String myPassword = String(password);
+  
+  if (_isNull(0)) mySsid = "";
+  if (_isNull(WIFI_VARIABLE_LENGTH)) myPassword = "";
+
+  Credentials myCredentials;
+  myCredentials.ssid = mySsid;
+  myCredentials.password = myPassword;
+
+  return myCredentials;
+}
+
 void ArduinoAQIData::_clearEEPROM() {
   for (int i = 0 ; i < EEPROM.length() ; i++) {
     EEPROM.write(i, 255);
@@ -102,23 +125,19 @@ void ArduinoAQIData::_reconnectWifi() {
     return;
   }
   
-  // check for saved credentials
-  if (_isNull(0) || _isNull(WIFI_VARIABLE_LENGTH)) {
+  // retrieve saved credentials
+  Credentials myCredentials = getSavedCredentials();
+
+  if (myCredentials.ssid == "") {
     Serial.println("No EEPROM-stored credentials. Back to config…");
     resetWifi();
     return;
   }
 
-  // retrieve saved credentials
-  char ssid[WIFI_VARIABLE_LENGTH];
-  char password[WIFI_VARIABLE_LENGTH];
-  EEPROM.get(0, ssid);
-  EEPROM.get(WIFI_VARIABLE_LENGTH, password);
-
   // attempt connection
-  Serial.println("Attempting to reconnect to " + String(ssid) + "… (" + _connectionAttempts + ")"); 
+  Serial.println("Attempting to reconnect to " + myCredentials.ssid + "… (" + _connectionAttempts + ")"); 
   WiFi.disconnect();
-  _wifiManager.connectWifi(String(ssid), String(password));
+  _wifiManager.connectWifi(myCredentials.ssid, myCredentials.password);
   
   // success
   _onWifiConnect();

@@ -81,6 +81,13 @@ WiFiManager::~WiFiManager()
     }
 }
 
+void WiFiManager::setSavedSsid(String ssid) {
+  _savedSsid = ssid;
+}
+void WiFiManager::setSavedPassword(String password) {
+  _savedPassword = password;
+}
+
 bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   if(_paramsCount + 1 > _max_params)
   {
@@ -292,15 +299,16 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(F("Already connected. Bailing out."));
     return WL_CONNECTED;
   }
+
+  // fix connection in progress hanging 
+  WiFi.disconnect();
+  setConnectTimeout(30);
+
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
-    // fix connection in progress hanging 
-    WiFi.disconnect();
-    setConnectTimeout(10);
-
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
-    if (WiFi.SSID()) {
+    if (WiFi.SSID() || _savedSsid != "") {
       // DEBUG_WM(WiFi.SSID());
 
       DEBUG_WM(F("Using last saved values, should be faster"));
@@ -309,7 +317,12 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       wifi_station_disconnect();
       ETS_UART_INTR_ENABLE();
 
-      WiFi.begin();
+      if (_savedSsid != "") {
+        DEBUG_WM(F("Using EEPROM-stored credentials"));
+        WiFi.begin(_savedSsid.c_str(), _savedPassword.c_str());
+      } else {
+        WiFi.begin();  
+      }
     } else {
       DEBUG_WM(F("No saved credentials"));
     }

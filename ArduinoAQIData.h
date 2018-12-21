@@ -16,6 +16,11 @@
 #define WIFI_VARIABLE_LENGTH 60
 #define MAX_CONNECTION_ATTEMPTS 10
 
+struct Credentials {
+  String ssid;
+  String password;
+};
+
 class ArduinoAQIData {
   public:
     ArduinoAQIData();
@@ -25,6 +30,7 @@ class ArduinoAQIData {
     String getMacAddress();
     bool isConnected();
     bool write(float number1, float number2, float number3, float number4);
+    Credentials getSavedCredentials();
   private:
     WiFiClient _client;
     WiFiManager _wifiManager;
