@@ -50,6 +50,13 @@ bool ArduinoAQIData::write(float number1, float number2, float number3, float nu
   ThingSpeak.setField(4, number4);
 
   int x = ThingSpeak.writeFields(_thingspeakChannelId, _thingspeakWriteKey.c_str());
+
+  if (x == ERR_CONNECT_FAILED) {
+    Serial.println("ThingSpeak connection error!");
+    _connectionAttempts = 0;
+    _reconnectWifi();
+    return false;
+  }
   
   if (x == ERR_BADAPIKEY || x == ERR_BADURL) {
     Serial.println("Wrong API key or bad endpoint. Reload config…");
@@ -69,8 +76,8 @@ bool ArduinoAQIData::write(float number1, float number2, float number3, float nu
 }
 
 void ArduinoAQIData::resetWifi() {  
-  Serial.println("Resetting wifi…");
-
+  Serial.println("Resetting wifi in AP mode…");
+  
   _connectionAttempts = 0;
   WiFi.disconnect();
   _wifiManager.startConfigPortal(ACCESS_POINT);
