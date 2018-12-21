@@ -13,6 +13,7 @@ PMS pms(pmsSerial);
 PMS::DATA pmsData;
 
 ArduinoAQIData data;
+unsigned long lastDataSend = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -29,13 +30,14 @@ void setup() {
   // initialize display
   display.begin();
   display.setBacklight(10);
+  display.print("----");
   
+  // initialize WiFi reset button
+  resetButton.begin();
+
   // connect to WiFi
   // note: access point mode is blocking
   data.begin();
-
-  // initialize WiFi reset button
-  resetButton.begin();
 }
 
 char* getNumberWithLeadingZeros(long num) {
@@ -48,6 +50,24 @@ char* getNumberWithLeadingZeros(long num, int displayLength) {
   sprintf(buffer, pattern.c_str(), num);
   
   return buffer;
+}
+
+bool isRateLimited() {
+  unsigned long now = millis();
+
+  if (lastDataSend > now) {
+    // clock overflowed
+    lastDataSend = 0;
+    return true;
+  }
+
+  unsigned long diff = now - lastDataSend;
+
+  if (diff > THINGSPEAK_RATE_LIMIT_SECONDS * 1000) {
+    return false;
+  } else {
+    return true;
+  }
 }
 
 void loop() {
@@ -70,6 +90,9 @@ void loop() {
     display.clear();
     display.print(getNumberWithLeadingZeros(round(aqi)));
 
+    // wait a few secs
+    if (isRateLimited()) return;
+
     // send data to ThingSpeak
     if (data.write(pmsData.PM_AE_UG_1_0, pmsData.PM_AE_UG_2_5, pmsData.PM_AE_UG_10_0, aqi)) {
       Serial.println("Data written to ThingSpeak");
@@ -77,6 +100,6 @@ void loop() {
       Serial.println("ThingSpeak write error!");
     }
 
-    delay(15000);
+    lastDataSend = millis();
   }
 }
