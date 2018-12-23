@@ -1,5 +1,4 @@
 # ArduinoAQI v1.0
-### ♥ Antifascist Science Club
 
 This device continuously monitors atmospheric particulate matter. It sends sensor data to a registered ThingSpeak channel and displays realtime Air Quality Index [calculations](https://en.wikipedia.org/wiki/Air_quality_index#United_States). It was designed to be cheap and efficient.
 
@@ -19,3 +18,5 @@ This device continuously monitors atmospheric particulate matter. It sends senso
 
 ## Wiring Diagram
 ![ArduinoAQI wiring diagram](ArduinoAQI_bb.png)
+
+### ♥ Antifascist Science Club

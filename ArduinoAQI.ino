@@ -14,6 +14,9 @@ PMS::DATA pmsData;
 
 ArduinoAQIData data;
 unsigned long lastDataSend = 0;
+unsigned long spinupTimeStart = 0;
+bool isSpinningUp = true;
+bool isWifiMode = true;
 
 void setup() {
   Serial.begin(9600);
@@ -30,14 +33,15 @@ void setup() {
   // initialize display
   display.begin();
   display.setBacklight(10);
+  
+  // @todo
+  // spinup animation
   display.print("----");
   
-  // initialize WiFi reset button
+  // initialize reset button
   resetButton.begin();
-  
-  // connect to WiFi
-  // note: access point mode is blocking
-  data.begin();
+
+  spinupTimeStart = millis();
 }
 
 char* getNumberWithLeadingZeros(long num) {
@@ -52,35 +56,79 @@ char* getNumberWithLeadingZeros(long num, int displayLength) {
   return buffer;
 }
 
-bool isRateLimited() {
+bool isTimeExceeded(unsigned long &startTime, int numSeconds) {
   unsigned long now = millis();
 
-  if (lastDataSend > now) {
+  if (startTime > now) {
     // clock overflowed
-    lastDataSend = 0;
-    return true;
+    startTime = 0;
+    return false;
   }
 
-  unsigned long diff = now - lastDataSend;
+  unsigned long diff = now - startTime;
 
-  if (diff > THINGSPEAK_RATE_LIMIT_SECONDS * 1000) {
-    return false;
-  } else {
+  if (diff > numSeconds * 1000) {
     return true;
+  } else {
+    return false;
   }
 }
 
+void connectWifi() {
+  display.clear();
+  display.print("----");
+  data.begin();
+}
+
+void stopSpinup() {
+  isSpinningUp = false;
+
+  // @todo
+  // stop spinup animation
+  display.clear();
+  display.print("----");
+}
+
 void loop() {
+  // reset button switches behavior after spinup
+  if (resetButton.released()) {
+    if (isSpinningUp) {
+      // @todo
+      // save preference to EEPROM
+
+      // proceed without wifi
+      isWifiMode = false;
+      stopSpinup();
+    } else {
+      if (isWifiMode) {
+        // reset wifi
+        data.resetWifi();
+      } else {
+        // switch to wifi mode
+        isWifiMode = true;
+        connectWifi();
+      }
+    }
+  }
+  
+  if (isSpinningUp) {
+    if (isTimeExceeded(spinupTimeStart, SPINUP_SECONDS)) {
+      stopSpinup();
+      
+      if (isWifiMode) {
+        connectWifi();
+      }
+    }
+
+    return;
+  }
+
   if (data.isConnected()) {
     digitalWrite(LED_BUILTIN, LOW);
   } else {
     digitalWrite(LED_BUILTIN, HIGH);
   }
-  
-  if (resetButton.released()) {
-    data.resetWifi();
-  }
-  
+
   if (pms.read(pmsData)) {
     // calculate AQI
     float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
@@ -90,8 +138,10 @@ void loop() {
     display.clear();
     display.print(getNumberWithLeadingZeros(round(aqi)));
 
+    if (!isWifiMode) return;
+
     // wait a few secs
-    if (isRateLimited()) return;
+    if (!isTimeExceeded(lastDataSend, THINGSPEAK_RATE_LIMIT_SECONDS)) return;
 
     // send data to ThingSpeak
     if (data.write(pmsData.PM_AE_UG_1_0, pmsData.PM_AE_UG_2_5, pmsData.PM_AE_UG_10_0, aqi)) {
