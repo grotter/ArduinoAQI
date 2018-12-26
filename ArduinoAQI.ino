@@ -72,17 +72,25 @@ bool isTimeExceeded(unsigned long &startTime, float numSeconds) {
   }
 }
 
-void connectWifi() {
+void clearDisplay() {
   display.clear();
   display.print("----");
+}
+
+void onAPMode(WiFiManager *myWiFiManager) {
+  Serial.println("Creating access point: " + myWiFiManager->getConfigPortalSSID());
+  clearDisplay();
+}
+
+void connectWifi() {
+  clearDisplay();
+  data.setAPCallback(onAPMode);
   data.begin();
 }
 
 void stopSpinup() {
   isSpinningUp = false;
-
-  display.clear();
-  display.print("----");
+  clearDisplay();
 }
 
 void loop() {

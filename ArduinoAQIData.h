@@ -30,6 +30,7 @@ class ArduinoAQIData {
     String getMacAddress();
     bool isConnected();
     bool write(float number1, float number2, float number3, float number4);
+    void setAPCallback( void (*func)(WiFiManager*) );
     Credentials getSavedCredentials();
   private:
     WiFiClient _client;
@@ -38,7 +39,7 @@ class ArduinoAQIData {
     bool _isRegistered = false;
     String _thingspeakWriteKey = "";
     unsigned long _thingspeakChannelId = 0;
-
+    
     void _onWifiConnect();    
     void _clearEEPROM();
     void _reconnectWifi();

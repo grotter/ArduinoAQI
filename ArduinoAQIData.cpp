@@ -12,12 +12,6 @@ void ArduinoAQIData::begin() {
   _wifiManager.setDebugOutput(false);
   _wifiManager.setConfigPortalTimeout(300);
 
-  // @see
-  // https://stackoverflow.com/questions/39803135/c-unresolved-overloaded-function-type
-  _wifiManager.setAPCallback([](WiFiManager *myWiFiManager) -> void {
-    Serial.println("Creating access point: " + myWiFiManager->getConfigPortalSSID());
-  });
-
   _wifiManager.setSaveConfigCallback([]() -> void {
     Serial.println("WiFi config saved");
   });
@@ -29,6 +23,10 @@ void ArduinoAQIData::begin() {
 
 bool ArduinoAQIData::isConnected() {
   return WiFi.status() == WL_CONNECTED;
+}
+
+void ArduinoAQIData::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
+  _wifiManager.setAPCallback(func);
 }
 
 bool ArduinoAQIData::write(float number1, float number2, float number3, float number4) {
