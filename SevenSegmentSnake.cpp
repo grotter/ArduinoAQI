@@ -46,7 +46,6 @@ void SevenSegmentSnake::process() {
     _currentStep = 0;
   }
 
-  // Serial.println(_currentStep);
   SnakeStep step = _steps[_currentStep];
   _rawBuffer[step.loc] = step.value;
   printRaw(_rawBuffer, 4, 0);

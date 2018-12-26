@@ -1,3 +1,6 @@
+/*
+ * An extension to SevenSegmentFun with a non-blocking snake animation
+ */
 #ifndef SevenSegmentSnake_h
 #define SevenSegmentSnake_h
 
@@ -16,7 +19,6 @@ class SevenSegmentSnake : public SevenSegmentFun {
   public:
     SevenSegmentSnake(uint8_t pinClk, uint8_t pinDIO);
     void process();
-    void nonBlockingSnake();
   private:
     unsigned long _currentStep = 0;
     SnakeStep _steps[STEPS_LENGTH];
