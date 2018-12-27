@@ -122,6 +122,8 @@ void ArduinoAQIData::_clearEEPROM() {
   for (int i = 0 ; i < EEPROM.length() ; i++) {
     EEPROM.write(i, 255);
   }
+
+  EEPROM.commit();
 }
 
 void ArduinoAQIData::_reconnectWifi() {
@@ -164,6 +166,10 @@ void ArduinoAQIData::_saveWifiCredentials() {
   
   EEPROM.put(0, mySsid);
   EEPROM.put(WIFI_VARIABLE_LENGTH, myPassword);
+  EEPROM.commit();
+  
+  _wifiManager.setSavedSsid(WiFi.SSID());
+  _wifiManager.setSavedPassword(WiFi.psk());
 }
 
 void ArduinoAQIData::_onWifiConnect () {
