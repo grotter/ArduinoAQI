@@ -78,9 +78,14 @@ void ArduinoAQIData::resetWifi() {
   _clearEEPROMCredentials();
   WiFi.disconnect(true);
 
-  // @todo
-  // wait for disconnect callback
-  delay(5000);
+  // wait for disconnect
+  while(1) {
+    if (WiFi.status() == WL_DISCONNECTED) {
+      break;
+    }
+    
+    delay(1000);
+  }
 
   // @see
   // https://github.com/esp8266/Arduino/issues/1722
