@@ -73,14 +73,15 @@ bool ArduinoAQIData::write(float number1, float number2, float number3, float nu
   return x == OK_SUCCESS;
 }
 
-void ArduinoAQIData::resetWifi() {  
-  Serial.println("Resetting wifi in AP mode…");
-  
-  _connectionAttempts = 0;
-  WiFi.disconnect();
-  _wifiManager.startConfigPortal(ACCESS_POINT);
-  
-  _onWifiConnect();
+void ArduinoAQIData::resetWifi() {
+  // clear credentials
+  _clearEEPROM();
+  WiFi.disconnect(true);
+
+  // @see
+  // https://github.com/esp8266/Arduino/issues/1722
+  Serial.println("ESP.restart does not work the first time after serial flashing.");
+  ESP.restart();
 }
 
 String ArduinoAQIData::getMacAddress() {
