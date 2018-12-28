@@ -9,7 +9,7 @@ void ArduinoAQIData::begin() {
   _wifiManager.setSavedSsid(myCredentials.ssid);
   _wifiManager.setSavedPassword(myCredentials.password);
   
-  _wifiManager.setDebugOutput(false);
+  _wifiManager.setDebugOutput(true);
   _wifiManager.setConfigPortalTimeout(300);
 
   _wifiManager.setSaveConfigCallback([]() -> void {
@@ -75,8 +75,12 @@ bool ArduinoAQIData::write(float number1, float number2, float number3, float nu
 
 void ArduinoAQIData::resetWifi() {
   // clear credentials
-  _clearEEPROM();
+  _clearEEPROMCredentials();
   WiFi.disconnect(true);
+
+  // @todo
+  // wait for disconnect callback
+  delay(5000);
 
   // @see
   // https://github.com/esp8266/Arduino/issues/1722
@@ -119,8 +123,8 @@ Credentials ArduinoAQIData::getSavedCredentials() {
   return myCredentials;
 }
 
-void ArduinoAQIData::_clearEEPROM() {
-  for (int i = 0 ; i < EEPROM.length() ; i++) {
+void ArduinoAQIData::_clearEEPROMCredentials() {
+  for (int i = 0; i < WIFI_VARIABLE_LENGTH * 2; i++) {
     EEPROM.write(i, 255);
   }
 

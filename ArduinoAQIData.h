@@ -41,7 +41,7 @@ class ArduinoAQIData {
     unsigned long _thingspeakChannelId = 0;
     
     void _onWifiConnect();    
-    void _clearEEPROM();
+    void _clearEEPROMCredentials();
     void _reconnectWifi();
     void _saveWifiCredentials();
     void _loadThingspeakConfig();

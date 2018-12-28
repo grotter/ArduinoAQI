@@ -36,7 +36,7 @@ SevenSegmentSnake::SevenSegmentSnake(uint8_t pinClk, uint8_t pinDIO) : SevenSegm
         val = TM1637_CHAR_SNAKE_5;
       }
 
-      _steps[incrementer++] = SnakeStep { loc: j, value: val }; 
+      _steps[incrementer++] = { loc: j, value: val }; 
     }
   }
 }

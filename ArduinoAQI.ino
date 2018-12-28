@@ -93,26 +93,69 @@ void stopSpinup() {
   clearDisplay();
 }
 
-void loop() {
+void onResetRelease() {
   // reset button switches behavior after spinup
-  if (resetButton.released()) {
-    if (isSpinningUp) {
-      // @todo
-      // save preference to EEPROM
+  if (isSpinningUp) {
+    // @todo
+    // save preference to EEPROM
 
-      Serial.println("Start without wifi.");
-      isWifiMode = false;
-      stopSpinup();
+    Serial.println("Start without wifi.");
+    isWifiMode = false;
+    stopSpinup();
+  } else {
+    if (isWifiMode) {
+      Serial.println("Reset wifi config…");
+      data.resetWifi();
     } else {
-      if (isWifiMode) {
-        Serial.println("Reset wifi config…");
-        data.resetWifi();
-      } else {
-        Serial.println("Switch to wifi mode. Attempt to connect…");
-        isWifiMode = true;
-        connectWifi();
-      }
+      Serial.println("Switch to wifi mode. Attempt to connect…");
+      isWifiMode = true;
+      connectWifi();
     }
+  }
+}
+
+void processSensorData(bool trace) {
+  if (pms.read(pmsData)) {
+    if (trace) {
+      Serial.print("PM 1.0 (ug/m3): ");
+      Serial.println(pmsData.PM_AE_UG_1_0);
+    
+      Serial.print("PM 2.5 (ug/m3): ");
+      Serial.println(pmsData.PM_AE_UG_2_5);
+    
+      Serial.print("PM 10.0 (ug/m3): ");
+      Serial.println(pmsData.PM_AE_UG_10_0);
+    
+      Serial.println();
+    }
+    
+    // calculate AQI
+    float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
+    Category category = CalculateAQI::getCategory(aqi);
+  
+    // display
+    display.clear();
+    display.print(getNumberWithLeadingZeros(round(aqi)));
+    
+    if (!isWifiMode) return;
+  
+    // wait a few secs
+    if (!isTimeExceeded(lastDataSend, THINGSPEAK_RATE_LIMIT_SECONDS)) return;
+  
+    // send data to ThingSpeak
+    if (data.write(pmsData.PM_AE_UG_1_0, pmsData.PM_AE_UG_2_5, pmsData.PM_AE_UG_10_0, aqi)) {
+      Serial.println("Data written to ThingSpeak");
+    } else {
+      Serial.println("ThingSpeak write error!");
+    }
+  
+    lastDataSend = millis();
+  }
+}
+
+void loop() {
+  if (resetButton.released()) {
+    onResetRelease();
   }
   
   if (isSpinningUp) {
@@ -142,27 +185,5 @@ void loop() {
     digitalWrite(LED_BUILTIN, HIGH);
   }
 
-  if (pms.read(pmsData)) {
-    // calculate AQI
-    float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
-    Category category = CalculateAQI::getCategory(aqi);
-
-    // display
-    display.clear();
-    display.print(getNumberWithLeadingZeros(round(aqi)));
-    
-    if (!isWifiMode) return;
-
-    // wait a few secs
-    if (!isTimeExceeded(lastDataSend, THINGSPEAK_RATE_LIMIT_SECONDS)) return;
-
-    // send data to ThingSpeak
-    if (data.write(pmsData.PM_AE_UG_1_0, pmsData.PM_AE_UG_2_5, pmsData.PM_AE_UG_10_0, aqi)) {
-      Serial.println("Data written to ThingSpeak");
-    } else {
-      Serial.println("ThingSpeak write error!");
-    }
-
-    lastDataSend = millis();
-  }
+  processSensorData(false);
 }

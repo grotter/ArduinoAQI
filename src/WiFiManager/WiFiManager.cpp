@@ -306,21 +306,22 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
+    DEBUG_WM("Using passed arguments");
+    DEBUG_WM("ssid: " + ssid + ", password: " + pass);
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
     if (WiFi.SSID() || _savedSsid != "") {
-      // DEBUG_WM(WiFi.SSID());
-
-      DEBUG_WM(F("Using last saved values, should be faster"));
       //trying to fix connection in progress hanging
       ETS_UART_INTR_DISABLE();
       wifi_station_disconnect();
       ETS_UART_INTR_ENABLE();
 
       if (_savedSsid != "") {
-        DEBUG_WM(F("Using EEPROM-stored credentials"));
+        DEBUG_WM("Using EEPROM-stored credentials");
+        DEBUG_WM("ssid: " + _savedSsid + ", password: " + _savedPassword);
         WiFi.begin(_savedSsid.c_str(), _savedPassword.c_str());
       } else {
+        DEBUG_WM("WiFi.begin with no arguments");
         WiFi.begin();  
       }
     } else {
