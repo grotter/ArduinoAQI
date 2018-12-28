@@ -14,7 +14,7 @@
 
 #define JSON_BUFFER 5000
 #define WIFI_VARIABLE_LENGTH 60
-#define MAX_CONNECTION_ATTEMPTS 10
+#define MAX_CONNECTION_ATTEMPTS 5
 
 struct Credentials {
   String ssid;
