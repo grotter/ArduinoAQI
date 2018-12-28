@@ -8,13 +8,10 @@
 #include <ESP8266WebServer.h>
 #include <ThingSpeak.h>
 #include <ArduinoJson.h>
-
 #include "src/WiFiManager/WiFiManager.h"
 #include "private/config.h"
 
 #define JSON_BUFFER 5000
-#define WIFI_VARIABLE_LENGTH 60
-#define MAX_CONNECTION_ATTEMPTS 5
 
 struct Credentials {
   String ssid;

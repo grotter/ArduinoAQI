@@ -35,11 +35,29 @@ void setup() {
   Serial.println("Starting in spinup mode…");
   display.begin();
   display.setBacklight(10);
+
+  // check for saved wifi mode
+  if (wasWifiModeDisabled()) {
+    Serial.println("Wifi mode previously disabled. Skipping spinup…");
+    stopSpinup();
+    isWifiMode = false;
+  }
   
   // initialize reset button
   resetButton.begin();
-
+  
   spinupTimeStart = millis();
+}
+
+void saveWifiMode() {
+  byte disableWifi = isWifiMode ? 0 : 1;
+  EEPROM.put(WIFI_VARIABLE_LENGTH * 2, disableWifi);
+  EEPROM.commit();
+}
+
+bool wasWifiModeDisabled() {
+  byte disableWifi = EEPROM.read(WIFI_VARIABLE_LENGTH * 2);
+  return disableWifi == 1;
 }
 
 char* getNumberWithLeadingZeros(long num) {
@@ -96,11 +114,9 @@ void stopSpinup() {
 void onResetRelease() {
   // reset button switches behavior after spinup
   if (isSpinningUp) {
-    // @todo
-    // save preference to EEPROM
-
     Serial.println("Start without wifi.");
     isWifiMode = false;
+    saveWifiMode();
     stopSpinup();
   } else {
     if (isWifiMode) {
@@ -109,6 +125,7 @@ void onResetRelease() {
     } else {
       Serial.println("Switch to wifi mode. Attempt to connect…");
       isWifiMode = true;
+      saveWifiMode();
       connectWifi();
     }
   }
