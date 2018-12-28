@@ -185,5 +185,5 @@ void loop() {
     digitalWrite(LED_BUILTIN, HIGH);
   }
 
-  processSensorData(false);
+  processSensorData(true);
 }
