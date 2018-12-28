@@ -134,10 +134,16 @@ void ArduinoAQIData::_clearEEPROMCredentials() {
 void ArduinoAQIData::_reconnectWifi() {
   _connectionAttempts++;
 
+  if (isConnected()) {
+    Serial.println("Already connected, something is wonky. Try restarting…");
+    ESP.restart();
+    return;
+  }
+  
   // only try a few times, otherwise reset button is blocked
   if (_connectionAttempts > MAX_CONNECTION_ATTEMPTS) {
-    Serial.println("Max connection attempts reached. Back to config…");
-    resetWifi();
+    Serial.println("Max connection attempts reached. Try restarting…");
+    ESP.restart();
     return;
   }
   
