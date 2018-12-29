@@ -86,12 +86,20 @@ void ArduinoAQIData::disconnectAndRestart(bool clearCredentials) {
   if (isConnected()) {
     WiFi.disconnect(clearCredentials);
     
-    // wait for disconnect
+    // wait for disconnect    
+    int disconnectAttempts = 0;
+
     while(1) {
+      disconnectAttempts++;
+
       if (WiFi.status() == WL_DISCONNECTED) {
         break;
       }
       
+      if (disconnectAttempts >= MAX_DISCONNECT_ATTEMPTS) {
+        break;
+      }
+
       delay(1000);
     }
   }
