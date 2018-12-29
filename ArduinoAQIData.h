@@ -23,6 +23,8 @@ class ArduinoAQIData {
     ArduinoAQIData();
 
     void begin();
+    void restart();
+    void disconnectAndRestart(bool clearCredentials);
     void resetWifi();
     String getMacAddress();
     bool isConnected();

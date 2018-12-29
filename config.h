@@ -6,6 +6,7 @@
 #define SPINUP_SECONDS 10
 #define WIFI_VARIABLE_LENGTH 60
 #define MAX_CONNECTION_ATTEMPTS 5
+#define HOURS_TO_RESTART 6
 #define PIN_LED_CLK 14 // SCK D5 on WeMos D1 R2
 #define PIN_LED_DIO 12 // MISO D6 on WeMos D1 R2
 #define PIN_RESET 13 // MOSI D7 on WeMos D1 R2

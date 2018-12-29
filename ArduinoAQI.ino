@@ -16,6 +16,7 @@ ArduinoAQIData data;
 unsigned long lastDataSend = 0;
 unsigned long lastSpinupStep = 0;
 unsigned long spinupTimeStart = 0;
+unsigned long programStartTime = 0;
 bool isSpinningUp = true;
 bool isWifiMode = true;
 
@@ -45,7 +46,8 @@ void setup() {
   
   // initialize reset button
   resetButton.begin();
-  
+
+  programStartTime = millis();
   spinupTimeStart = millis();
 }
 
@@ -171,6 +173,12 @@ void processSensorData(bool trace) {
 }
 
 void loop() {
+  // hard restart every few hours
+  if (isTimeExceeded(programStartTime, HOURS_TO_RESTART * 60 * 60)) {
+    data.disconnectAndRestart(false);
+    return;
+  }
+  
   if (resetButton.released()) {
     onResetRelease();
   }

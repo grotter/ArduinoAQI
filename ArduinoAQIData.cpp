@@ -75,24 +75,34 @@ bool ArduinoAQIData::write(float number1, float number2, float number3, float nu
   return x == OK_SUCCESS;
 }
 
-void ArduinoAQIData::resetWifi() {
-  // clear credentials
-  _clearEEPROMCredentials();
-  WiFi.disconnect(true);
-
-  // wait for disconnect
-  while(1) {
-    if (WiFi.status() == WL_DISCONNECTED) {
-      break;
-    }
-    
-    delay(1000);
-  }
-
+void ArduinoAQIData::restart() {
   // @see
   // https://github.com/esp8266/Arduino/issues/1722
   Serial.println("ESP.restart does not work the first time after serial flashing.");
   ESP.restart();
+}
+
+void ArduinoAQIData::disconnectAndRestart(bool clearCredentials) {
+  if (isConnected()) {
+    WiFi.disconnect(clearCredentials);
+    
+    // wait for disconnect
+    while(1) {
+      if (WiFi.status() == WL_DISCONNECTED) {
+        break;
+      }
+      
+      delay(1000);
+    }
+  }
+
+  restart();
+}
+
+void ArduinoAQIData::resetWifi() {
+  // clear credentials and restart
+  _clearEEPROMCredentials();
+  disconnectAndRestart(true);
 }
 
 String ArduinoAQIData::getMacAddress() {
@@ -143,14 +153,14 @@ void ArduinoAQIData::_reconnectWifi() {
 
   if (isConnected()) {
     Serial.println("Already connected, something is wonky. Try restarting…");
-    ESP.restart();
+    restart();
     return;
   }
   
   // only try a few times, otherwise reset button is blocked
   if (_connectionAttempts > MAX_CONNECTION_ATTEMPTS) {
     Serial.println("Max connection attempts reached. Try restarting…");
-    ESP.restart();
+    restart();
     return;
   }
   
