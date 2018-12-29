@@ -22,6 +22,7 @@ class ArduinoAQIData {
   public:
     ArduinoAQIData();
 
+    int numRegisteredDevices = 1;
     void begin();
     void restart();
     void disconnectAndRestart(bool clearCredentials);

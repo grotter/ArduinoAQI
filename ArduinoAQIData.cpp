@@ -255,6 +255,9 @@ bool ArduinoAQIData::_setThingspeakConfig(String json) {
     JsonArray& feeds = root["feeds"];
     if (!feeds.success()) return false;
 
+    numRegisteredDevices = feeds.size();
+    Serial.println("Number of registered devices: " + String(numRegisteredDevices));
+    
     // iterate our ThingSpeak registration channel and match MAC addresses
     for (JsonObject& feed : feeds) {
       if (feed.containsKey("field1") && feed.containsKey("field2")  && feed.containsKey("field3")) {

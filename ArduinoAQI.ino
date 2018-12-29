@@ -74,7 +74,7 @@ char* getNumberWithLeadingZeros(long num, int displayLength) {
   return buffer;
 }
 
-bool isTimeExceeded(unsigned long &startTime, float numSeconds) {
+bool isTimeExceeded(unsigned long &startTime, unsigned long numMilliseconds) {
   unsigned long now = millis();
 
   if (startTime > now) {
@@ -85,7 +85,7 @@ bool isTimeExceeded(unsigned long &startTime, float numSeconds) {
 
   unsigned long diff = now - startTime;
 
-  if (diff > numSeconds * 1000) {
+  if (diff > numMilliseconds) {
     return true;
   } else {
     return false;
@@ -133,6 +133,18 @@ void onResetRelease() {
   }
 }
 
+unsigned long getRateLimitSeconds() {
+  float messagesPerDay = MESSAGES_PER_YEAR / 365;
+  float secondsPerDay = 60 * 60 * 24;
+  float rateLimitSeconds = (secondsPerDay / messagesPerDay) * data.numRegisteredDevices;
+
+  if (rateLimitSeconds < THINGSPEAK_RATE_LIMIT_SECONDS) {
+    rateLimitSeconds = THINGSPEAK_RATE_LIMIT_SECONDS;
+  }
+
+  return ceil(rateLimitSeconds);
+}
+
 void processSensorData(bool trace) {
   if (pms.read(pmsData)) {
     if (trace) {
@@ -159,7 +171,8 @@ void processSensorData(bool trace) {
     if (!isWifiMode) return;
   
     // wait a few secs
-    if (!isTimeExceeded(lastDataSend, THINGSPEAK_RATE_LIMIT_SECONDS)) return;
+    unsigned long rateLimitSeconds = getRateLimitSeconds();
+    if (!isTimeExceeded(lastDataSend, rateLimitSeconds * 1000)) return;
   
     // send data to ThingSpeak
     if (data.write(pmsData.PM_AE_UG_1_0, pmsData.PM_AE_UG_2_5, pmsData.PM_AE_UG_10_0, aqi)) {
@@ -174,7 +187,7 @@ void processSensorData(bool trace) {
 
 void loop() {
   // hard restart every few hours
-  if (isTimeExceeded(programStartTime, HOURS_TO_RESTART * 60 * 60)) {
+  if (isTimeExceeded(programStartTime, HOURS_TO_RESTART * 60 * 60 * 1000)) {
     data.disconnectAndRestart(false);
     return;
   }
@@ -185,12 +198,12 @@ void loop() {
   
   if (isSpinningUp) {
     // process spinup animation
-    if (isTimeExceeded(lastSpinupStep, .01)) {
+    if (isTimeExceeded(lastSpinupStep, 10)) {
       display.process();
       lastSpinupStep = millis();
     }
     
-    if (isTimeExceeded(spinupTimeStart, SPINUP_SECONDS)) {
+    if (isTimeExceeded(spinupTimeStart, SPINUP_SECONDS * 1000)) {
       stopSpinup();
       
       if (isWifiMode) {
