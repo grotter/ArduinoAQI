@@ -173,14 +173,14 @@ void processSensorData(bool trace) {
     // calculate AQI
     float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
     
-    // update for averaging
-    CalculateAQI::updateSensorData(sensorData, pmsData, aqi);
-    
     // display realtime unaveraged AQI
     display.clear();
     display.print(getNumberWithLeadingZeros(round(aqi), DISPLAY_LENGTH));
     
     if (!isWifiMode) return;
+
+    // update for averaging
+    CalculateAQI::updateSensorData(sensorData, pmsData, aqi);
     
     // wait a few secs
     unsigned long rateLimitSeconds = getRateLimitSeconds();
@@ -191,10 +191,11 @@ void processSensorData(bool trace) {
     
     if (data.write(averagedData.PM_AE_UG_1_0, averagedData.PM_AE_UG_2_5, averagedData.PM_AE_UG_10_0, averagedData.AQI)) {
       Serial.println("Data written to ThingSpeak");
-      resetSensorAverages();
     } else {
       Serial.println("ThingSpeak write error!");
     }
+
+    resetSensorAverages();
   
     lastDataSend = millis();
   }
