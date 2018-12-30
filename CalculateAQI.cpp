@@ -3,6 +3,24 @@
 
 #include "CalculateAQI.h"
 
+SensorData CalculateAQI::getAveragedData(SensorData data) {
+  return {
+    PM_AE_UG_1_0: (data.PM_AE_UG_1_0 / data.numReads),
+    PM_AE_UG_2_5: (data.PM_AE_UG_2_5 / data.numReads),
+    PM_AE_UG_10_0: (data.PM_AE_UG_10_0 / data.numReads),
+    AQI: (data.AQI / data.numReads),
+    numReads: data.numReads
+  };
+}
+
+void CalculateAQI::updateSensorData(SensorData &data, PMS::DATA newData, float AQI) {
+  data.PM_AE_UG_1_0 += newData.PM_AE_UG_1_0;
+  data.PM_AE_UG_2_5 += newData.PM_AE_UG_2_5;
+  data.PM_AE_UG_10_0 += newData.PM_AE_UG_10_0;
+  data.AQI += AQI;
+  data.numReads++;
+}
+
 float CalculateAQI::getAQI(float I_high, float I_low, float C_high, float C_low, float C) {
   return (I_high - I_low) * (C - C_low) / (C_high - C_low) + I_low;
 }
@@ -12,7 +30,7 @@ float CalculateAQI::getPM25AQI(float cPM25) {
   return CalculateAQI::getAQI(b.iHi, b.iLo, b.cHi, b.cLo, cPM25);
 }
 
-struct Breakpoints CalculateAQI::getPM25Breakpoints(float cPM25) {
+Breakpoints CalculateAQI::getPM25Breakpoints(float cPM25) {
   Breakpoints b;
     
   if (cPM25 <= 12) {
@@ -55,7 +73,7 @@ struct Breakpoints CalculateAQI::getPM25Breakpoints(float cPM25) {
   return b;
 }
 
-struct Category CalculateAQI::getCategory(float AQI) {
+Category CalculateAQI::getCategory(float AQI) {
   Category c;
   c.level = "Unknown";
   c.color = "black";

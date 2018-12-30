@@ -13,6 +13,7 @@ PMS pms(pmsSerial);
 PMS::DATA pmsData;
 
 ArduinoAQIData data;
+SensorData sensorData;
 unsigned long lastDataSend = 0;
 unsigned long lastSpinupStep = 0;
 unsigned long spinupTimeStart = 0;
@@ -47,8 +48,21 @@ void setup() {
   // initialize reset button
   resetButton.begin();
 
+  // initialize sensor data
+  resetSensorAverages();
+  
   programStartTime = millis();
   spinupTimeStart = millis();
+}
+
+void resetSensorAverages() {
+  sensorData = {
+    PM_AE_UG_1_0: 0,
+    PM_AE_UG_2_5: 0,
+    PM_AE_UG_10_0: 0,
+    AQI: 0,
+    numReads: 0  
+  };
 }
 
 void saveWifiMode() {
@@ -158,21 +172,26 @@ void processSensorData(bool trace) {
     
     // calculate AQI
     float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
-    Category category = CalculateAQI::getCategory(aqi);
-  
-    // display
+    
+    // update for averaging
+    CalculateAQI::updateSensorData(sensorData, pmsData, aqi);
+    
+    // display realtime unaveraged AQI
     display.clear();
     display.print(getNumberWithLeadingZeros(round(aqi), DISPLAY_LENGTH));
     
     if (!isWifiMode) return;
-  
+    
     // wait a few secs
     unsigned long rateLimitSeconds = getRateLimitSeconds();
     if (!isTimeExceeded(lastDataSend, rateLimitSeconds * 1000)) return;
-  
-    // send data to ThingSpeak
-    if (data.write(pmsData.PM_AE_UG_1_0, pmsData.PM_AE_UG_2_5, pmsData.PM_AE_UG_10_0, aqi)) {
+    
+    // send averaged data to ThingSpeak
+    SensorData averagedData = CalculateAQI::getAveragedData(sensorData);
+    
+    if (data.write(averagedData.PM_AE_UG_1_0, averagedData.PM_AE_UG_2_5, averagedData.PM_AE_UG_10_0, averagedData.AQI)) {
       Serial.println("Data written to ThingSpeak");
+      resetSensorAverages();
     } else {
       Serial.println("ThingSpeak write error!");
     }
