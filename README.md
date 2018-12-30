@@ -16,6 +16,12 @@ This device continuously monitors atmospheric particulate matter. It sends senso
 * mathwork‘s [ThingSpeak library](https://github.com/mathworks/thingspeak-arduino)
 * madleech‘s [Button library](https://github.com/madleech/Button)
 
+## Usage
+
+To setup wifi connectivity, the device will create an *ArduinoAQI Setup* access point when first run. Connect to this network with a phone or computer to set your wifi credentials.
+
+The device powers up in spinup mode for an initial ten seconds. Set wifi mode to **off** by clicking the reset button during spinup. In wifi mode, the reset button will clear your network credentials and relaunch the configuration access point.
+
 ## Wiring Diagram
 ![ArduinoAQI wiring diagram](ArduinoAQI_bb.png)
 
