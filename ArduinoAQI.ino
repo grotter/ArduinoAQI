@@ -27,7 +27,7 @@ void setup() {
   Serial.println("");
   Serial.println("ArduinoAQI v1.0");
   Serial.println("");
-  
+
   // LED_BUILTIN on the WeMos D1 R2 is inverted
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
@@ -60,10 +60,6 @@ void saveWifiMode() {
 bool wasWifiModeDisabled() {
   byte disableWifi = EEPROM.read(WIFI_VARIABLE_LENGTH * 2);
   return disableWifi == 1;
-}
-
-char* getNumberWithLeadingZeros(long num) {
-  return getNumberWithLeadingZeros(num, DISPLAY_LENGTH);
 }
 
 char* getNumberWithLeadingZeros(long num, int displayLength) {
@@ -166,7 +162,7 @@ void processSensorData(bool trace) {
   
     // display
     display.clear();
-    display.print(getNumberWithLeadingZeros(round(aqi)));
+    display.print(getNumberWithLeadingZeros(round(aqi), DISPLAY_LENGTH));
     
     if (!isWifiMode) return;
   

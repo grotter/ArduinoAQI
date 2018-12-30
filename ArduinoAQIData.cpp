@@ -29,7 +29,7 @@ void ArduinoAQIData::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
   _wifiManager.setAPCallback(func);
 }
 
-bool ArduinoAQIData::write(float number1, float number2, float number3, float number4) {
+bool ArduinoAQIData::write(uint16_t number1, uint16_t number2, uint16_t number3, float number4) {
   if (!isConnected()) {
     Serial.println("No wifi connection, try reconnecting.");
     _connectionAttempts = 0;
