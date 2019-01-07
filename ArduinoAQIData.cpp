@@ -6,6 +6,7 @@ ArduinoAQIData::ArduinoAQIData() {
 
 void ArduinoAQIData::begin() {
   Credentials myCredentials = getSavedCredentials();
+  
   _wifiManager.setSavedSsid(myCredentials.ssid);
   _wifiManager.setSavedPassword(myCredentials.password);
   
@@ -119,12 +120,12 @@ String ArduinoAQIData::getMacAddress() {
   byte mac[6];
   WiFi.macAddress(mac);
 
-  myMac = String(mac[5], HEX) + ":";
-  myMac += String(mac[4], HEX) + ":";
-  myMac += String(mac[3], HEX) + ":";
-  myMac += String(mac[2], HEX) + ":";
+  myMac = String(mac[0], HEX) + ":";
   myMac += String(mac[1], HEX) + ":";
-  myMac += String(mac[0], HEX);
+  myMac += String(mac[2], HEX) + ":";
+  myMac += String(mac[3], HEX) + ":";
+  myMac += String(mac[4], HEX) + ":";
+  myMac += String(mac[5], HEX);
    
   return myMac; 
 }
@@ -141,11 +142,10 @@ Credentials ArduinoAQIData::getSavedCredentials() {
   if (_isNull(0)) mySsid = "";
   if (_isNull(WIFI_VARIABLE_LENGTH)) myPassword = "";
 
-  Credentials myCredentials;
-  myCredentials.ssid = mySsid;
-  myCredentials.password = myPassword;
-
-  return myCredentials;
+  return {
+    ssid: mySsid,
+    password: myPassword
+  };
 }
 
 void ArduinoAQIData::_clearEEPROMCredentials() {
