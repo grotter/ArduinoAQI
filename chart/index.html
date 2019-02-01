@@ -144,7 +144,8 @@
                     myData.removeRow(0);
                     endpoint += '1';
                 } else {
-                    endpoint += '200';
+                    var results = getQueryVariable('results');
+                    endpoint += parseInt(results) ? results : '50';
 
                     // start polling for new data
                     setInterval(getData, 15000, true);
