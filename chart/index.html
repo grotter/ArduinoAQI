@@ -27,12 +27,28 @@
                 bottom: 0;
             }
 
+            #latest {
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: 10px;
+                z-index: 999;
+                background-color: #ffffff;
+                color: #000000;
+            }
+
+            #latest p, #latest h2 {
+                margin: 0;
+                padding: 0;
+            }
+
         </style>
         
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     </head>
 
     <body>
+        <div id="latest"></div>
         <div id="chart"></div>
 
         <script type="text/javascript">
@@ -67,6 +83,13 @@
                         color: '#333333'
                     }
                 };
+            }
+
+            function updateLatest (data) {
+                var latest = document.getElementById('latest');
+                var lastReadDate = new Date(data.created_at);
+
+                latest.innerHTML = '<p><small>Latest read on ' + lastReadDate.toLocaleString('en-US') + '</small></p><h2>AQI ' + Math.round(parseFloat(data.field4)) + '</h2>';
             }
 
             function drawChart (title, feeds) {
@@ -158,7 +181,10 @@
                   var json = JSON.parse(xhr.responseText);
                   
                   if (json.feeds) {
-                    drawChart(json.channel.name, json.feeds);  
+                    drawChart(json.channel.name, json.feeds);
+
+                    var latest = json.feeds[json.feeds.length - 1];
+                    updateLatest(latest);  
                   } else {
                     console.log(json);
                     chartContainer.innerHTML = '<h1>API error</h1>';
