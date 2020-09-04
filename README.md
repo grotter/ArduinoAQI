@@ -25,4 +25,4 @@ The device powers up in spinup mode for an initial ten seconds. Set wifi mode to
 ## Wiring Diagram
 ![ArduinoAQI wiring diagram](ArduinoAQI_bb.png)
 
-### ♥ Antifascist Science Club
+### ♥
