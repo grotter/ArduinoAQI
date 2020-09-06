@@ -250,25 +250,23 @@ void ArduinoAQIData::_loadThingspeakConfig() {
 }
 
 bool ArduinoAQIData::_setThingspeakConfig(String json) {
-    // try parsing the JSON
-    StaticJsonBuffer<JSON_BUFFER> jsonBuffer;
+    int from = json.indexOf("[");
+    if (from == -1) return false;
 
-    char jsonChar[JSON_BUFFER];
-    json.toCharArray(jsonChar, JSON_BUFFER);
+    int to = json.indexOf("]");
+    if (to == -1) return false;
     
-    JsonObject& root = jsonBuffer.parseObject(jsonChar);
-    if (!root.success()) return false;
-    if (!root.containsKey("feeds")) return false;
+    // try parsing the JSON
+    JSONVar feeds = JSON.parse(json.substring(from, to + 1));    
+    if (JSON.typeof(feeds) != "array") return false;
 
-    JsonArray& feeds = root["feeds"];
-    if (!feeds.success()) return false;
-
-    numRegisteredDevices = feeds.size();
-    Serial.println("Number of registered devices: " + String(numRegisteredDevices));
+    Serial.println("Number of registered devices: " + String(feeds.length()));
     
     // iterate our ThingSpeak registration channel and match MAC addresses
-    for (JsonObject& feed : feeds) {
-      if (feed.containsKey("field1") && feed.containsKey("field2")  && feed.containsKey("field3")) {
+    for (int i = 0; i < feeds.length(); i++) {
+      JSONVar feed = feeds[i];
+
+      if (feed.hasOwnProperty("field1") && feed.hasOwnProperty("field2")  && feed.hasOwnProperty("field3")) {
         const char* macAddress = feed["field1"];
 
         if (String(macAddress) == getMacAddress()) {

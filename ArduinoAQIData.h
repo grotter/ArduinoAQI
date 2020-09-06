@@ -7,11 +7,9 @@
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <ThingSpeak.h>
-#include <ArduinoJson.h>
+#include <Arduino_JSON.h>
 #include "src/WiFiManager/WiFiManager.h"
 #include "private/config.h"
-
-#define JSON_BUFFER 5000
 
 struct Credentials {
   String ssid;

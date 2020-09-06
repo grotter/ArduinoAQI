@@ -10,7 +10,7 @@ This device continuously monitors atmospheric particulate matter. It sends senso
 
 ## Dependencies
 * A minimally hacked version (included in this repo) of tzapu’s [WiFiManager](https://github.com/tzapu/WiFiManager)
-* bblanchon‘s [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+* [Arduino_JSON](https://github.com/arduino-libraries/Arduino_JSON)
 * fu-hsi‘s [library](https://github.com/fu-hsi/PMS) for Plantower PMS x003 family sensors
 * bremme‘s [library](https://github.com/bremme/arduino-tm1637) for controlling TM1637 display modules
 * mathwork‘s [ThingSpeak library](https://github.com/mathworks/thingspeak-arduino)
