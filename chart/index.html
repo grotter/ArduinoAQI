@@ -45,6 +45,7 @@
         </style>
         
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript" src="calculateaqi.js"></script>
     </head>
 
     <body>
@@ -55,7 +56,8 @@
 
             var channel = {
                 id: 0,
-                key: ''
+                key: '',
+                purpleAirSensorIds: []
             };
 
             var myData;
@@ -134,7 +136,14 @@
 
             function init () {
                 for (var i in channel) {
-                    channel[i] = getQueryVariable(i);
+                    var myVal = getQueryVariable(i);
+                    if (myVal === false) continue;
+
+                    if (typeof(channel[i]) == 'object') {
+                        channel[i] = myVal.split(',');
+                    } else {
+                        channel[i] = myVal;
+                    }
                 }
 
                 myData = new google.visualization.DataTable();
@@ -159,7 +168,44 @@
                 return false;
             }
 
+            function onPurpleAirData (raw) {
+                if (!raw) return;
+
+                var aqi = CalculateAQI.getPM25AQI(raw);
+                console.log(Math.round(aqi));
+                console.log(CalculateAQI.getCategory(aqi));
+            }
+
+            function getPurpleAirData (id) {
+                var endpoint = 'https://www.purpleair.com/json?show=' + id;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', endpoint, true);
+                
+                xhr.onload = function () {
+                  var json = JSON.parse(xhr.responseText);
+                  if (!json.results) return;
+
+                  var i = json.results.length;
+
+                  while (i--) {
+                    var result = json.results[i];
+                    onPurpleAirData(result.PM2_5Value);
+                  }
+                }
+
+                xhr.onerror = function (e) {
+                    console.log(e);
+                }
+
+                xhr.send();
+            }
+
             function getData (single) {
+                for (var i in channel.purpleAirSensorIds) {
+                    getPurpleAirData(channel.purpleAirSensorIds[i]);
+                }
+
                 var endpoint = 'https://api.thingspeak.com/channels/' + channel.id + '/feeds.json?api_key=' + channel.key + '&results=';
                 
                 if (single) {
