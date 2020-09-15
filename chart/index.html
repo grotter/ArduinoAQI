@@ -10,8 +10,6 @@
                 font-family: 'Helvetica', sans-serif;
                 margin: 0;
                 padding: 0;
-                background-color: #000000;
-                color: #ffffff;
             }
 
             h1 {
@@ -20,232 +18,31 @@
             }
 
             #chart {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
+                width: 100%;
             }
 
             #latest {
-                position: absolute;
-                top: 0;
-                left: 0;
                 padding: 10px;
-                z-index: 999;
-                background-color: #ffffff;
-                color: #000000;
             }
 
-            #latest p, #latest h2 {
+            #latest p, #latest h2, #latest h1 {
                 margin: 0;
                 padding: 0;
             }
 
         </style>
         
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <script type="text/javascript" src="calculateaqi.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
     </head>
 
     <body>
         <div id="latest"></div>
-        <div id="chart"></div>
+        <canvas id="chart"></canvas>
 
-        <script type="text/javascript">
-
-            var channel = {
-                id: 0,
-                key: '',
-                purpleAirSensorIds: []
-            };
-
-            var myData;
-            var chartContainer = document.getElementById('chart');
-
-            google.charts.load('current', { 'packages': ['corechart'] });
-            google.charts.setOnLoadCallback(init);
-
-            function getAxisOptions (title) {
-                return {
-                    title: title,
-                    titleTextStyle: {
-                        color: '#999999',
-                        fontSize: 16,
-                        italic: false,
-                        bold: false
-                    },
-                    textStyle: {
-                        color: '#ffffff'
-                    },
-                    gridlines: {
-                        color: '#333333'
-                    },
-                    minorGridlines: {
-                        color: '#333333'
-                    }
-                };
-            }
-
-            function updateLatest (data) {
-                var latest = document.getElementById('latest');
-                var lastReadDate = new Date(data.created_at);
-
-                latest.innerHTML = '<p><small>Latest read on ' + lastReadDate.toLocaleString('en-US') + '</small></p><h2>AQI ' + Math.round(parseFloat(data.field4)) + '</h2>';
-            }
-
-            function drawChart (title, feeds) {
-                var i = 0;
-
-                while (i < feeds.length) {
-                    var obj = feeds[i];
-
-                    myData.addRow([
-                        new Date(obj.created_at),
-                        parseFloat(obj.field4)
-                    ]);
-
-                    i++;
-                }
-
-                var chart = new google.visualization.LineChart(chartContainer);
-
-                var options = {
-                    title: title,
-                    titleTextStyle: {
-                        color: '#ffffff',
-                        fontSize: 20,
-                        italic: false,
-                        bold: true
-                    },
-                    lineWidth: 3,
-                    fontSize: 12,
-                    color: '#ffffff',
-                    fontName: 'Helvetica',
-                    colors: ['#ffffff'],
-                    curveType: 'function',
-                    legend: 'none',
-                    is3D: true,
-                    backgroundColor: 'transparent',
-                    hAxis: getAxisOptions('Time'),
-                    vAxis: getAxisOptions('AQI')
-                };
-
-                chart.draw(myData, options);
-            }
-
-            function init () {
-                for (var i in channel) {
-                    var myVal = getQueryVariable(i);
-                    if (myVal === false) continue;
-
-                    if (typeof(channel[i]) == 'object') {
-                        channel[i] = myVal.split(',');
-                    } else {
-                        channel[i] = myVal;
-                    }
-                }
-
-                myData = new google.visualization.DataTable();
-                myData.addColumn('date');
-                myData.addColumn('number');
-
-                getData();
-            }
-
-            function getQueryVariable (variable) {
-                var query = window.location.search.substring(1);
-                var vars = query.split('&');
-
-                for (var i = 0; i < vars.length; i++) {
-                    var pair = vars[i].split('=');
-
-                    if (decodeURIComponent(pair[0]) == variable) {
-                        return decodeURIComponent(pair[1]);
-                    }
-                }
-                
-                return false;
-            }
-
-            function onPurpleAirData (raw) {
-                if (!raw) return;
-
-                var aqi = CalculateAQI.getPM25AQI(raw);
-                console.log(Math.round(aqi));
-                console.log(CalculateAQI.getCategory(aqi));
-            }
-
-            function getPurpleAirData (id) {
-                var endpoint = 'https://www.purpleair.com/json?show=' + id;
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', endpoint, true);
-                
-                xhr.onload = function () {
-                  var json = JSON.parse(xhr.responseText);
-                  if (!json.results) return;
-
-                  var i = json.results.length;
-
-                  while (i--) {
-                    var result = json.results[i];
-                    onPurpleAirData(result.PM2_5Value);
-                  }
-                }
-
-                xhr.onerror = function (e) {
-                    console.log(e);
-                }
-
-                xhr.send();
-            }
-
-            function getData (single) {
-                for (var i in channel.purpleAirSensorIds) {
-                    getPurpleAirData(channel.purpleAirSensorIds[i]);
-                }
-
-                var endpoint = 'https://api.thingspeak.com/channels/' + channel.id + '/feeds.json?api_key=' + channel.key + '&results=';
-                
-                if (single) {
-                    // trim first value off myData
-                    myData.removeRow(0);
-                    endpoint += '1';
-                } else {
-                    var results = getQueryVariable('results');
-                    endpoint += parseInt(results) ? results : '50';
-
-                    // start polling for new data
-                    setInterval(getData, 15000, true);
-                }
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', endpoint, true);
-                
-                xhr.onload = function () {
-                  var json = JSON.parse(xhr.responseText);
-                  
-                  if (json.feeds) {
-                    drawChart(json.channel.name, json.feeds);
-
-                    var latest = json.feeds[json.feeds.length - 1];
-                    updateLatest(latest);  
-                  } else {
-                    console.log(json);
-                    chartContainer.innerHTML = '<h1>API error</h1>';
-                  }
-                }
-
-                xhr.onerror = function (e) {
-                    console.log(e);
-                    chartContainer.innerHTML = '<h1>Network error</h1>';
-                }
-
-                xhr.send();
-            }
-            
-        </script>
+        <script type="text/javascript" src="calculateaqi.js"></script>
+        <script type="text/javascript" src="chartaqi.js"></script>
+        <script> var foo = new ChartAQI(); </script>
     </body>
 
 </html>
