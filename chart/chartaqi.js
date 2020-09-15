@@ -45,21 +45,26 @@ var ChartAQI = function () {
             },
             options: {
                 responsive: true,
+                legend: {
+                    position: 'right'
+                },
                 scales: {
                     xAxes: [{
                         type: 'time',
                         time: {
-                            tooltipFormat: 'll HH:mm'
+                            tooltipFormat: 'MMM DD h:mm a'
                         },
                         scaleLabel: {
-                            display: true,
+                            display: false,
+                            fontStyle: 'bold',
                             labelString: 'Time'
                         }
                     }],
                     yAxes: [{
-                        display: true,
+                        
                         scaleLabel: {
                             display: true,
+                            fontStyle: 'bold',
                             labelString: 'AQI'
                         }
                     }]
@@ -148,6 +153,7 @@ var ChartAQI = function () {
             var json = JSON.parse(xhr.responseText);
             if (!json.results) return;
 
+            console.log(json);
             inst.onPurpleAirData(json.results[0]);
         }
 
@@ -179,7 +185,7 @@ var ChartAQI = function () {
 
         if (single) {
             // trim first value off sensorData
-            sensorData.removeRow(0);
+            // sensorData.removeRow(0);
         } else {
             results = this.getResults();
 
@@ -194,21 +200,23 @@ var ChartAQI = function () {
         xhr.open('GET', endpoint, true);
 
         xhr.onload = function () {
-            // graph any purpleair sensors
-            for (var i in channel.purpleAirSensorIds) {
-                inst.getPurpleAirData(channel.purpleAirSensorIds[i]);
-            }
-
             var json = JSON.parse(xhr.responseText);
 
-            if (json.feeds) {
-                inst.drawChart(json.channel.name, json.feeds);
-
-                var latestData = json.feeds[json.feeds.length - 1];
-                inst.updateLatest(latestData);
-            } else {
+            if (!json.feeds) {
                 console.log(json);
                 latest.innerHTML = '<h1>API error</h1>';
+                return;
+            }
+
+            // chart sensor data
+            inst.drawChart(json.channel.name, json.feeds);
+
+            var latestData = json.feeds[json.feeds.length - 1];
+            inst.updateLatest(latestData);
+
+            // add PurpleAir to chart
+            for (var i in channel.purpleAirSensorIds) {
+                inst.getPurpleAirData(channel.purpleAirSensorIds[i]);
             }
         }
 
