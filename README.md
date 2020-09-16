@@ -25,4 +25,13 @@ The device powers up in spinup mode for an initial ten seconds. Set wifi mode to
 ## Wiring Diagram
 ![ArduinoAQI wiring diagram](ArduinoAQI_bb.png)
 
+## JavaScript Chart
+
+I've included a small graph built on [Chart.js](https://github.com/chartjs/Chart.js) to view your sensor data and any optional PurpleAir sensors. The graph uses the following GET variables:
+
+* `key` - Your ThingSpeak read API key
+* `id` - Your ThingSpeak sensor ID
+* `purpleAirSensorIds` (optional) - A comma-delimited collection of PurpleAir sensor IDs
+* `results` (optional) - Number of results, defaults to 100
+
 ### ♥

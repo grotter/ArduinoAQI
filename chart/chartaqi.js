@@ -14,35 +14,9 @@ var ChartAQI = function () {
         latest.innerHTML = '<p><small>Latest read on ' + lastReadDate.toLocaleString('en-US') + '</small></p><h2>AQI ' + Math.round(parseFloat(data.field4)) + '</h2>';
     }
 
-    this.drawChart = function (title, feeds) {
-        var sensorData = [];
-
-        for (var i in feeds) {
-            var obj = feeds[i];
-
-            sensorData.push({
-                x: new Date(obj.created_at),
-                y: parseFloat(obj.field4)
-            });
-        }
-
-        var randomColor = this.getRandomColor();
-
+    this.initChart = function () {
         myChart = new Chart('chart', {
             type: 'line',
-            data: {
-                datasets: [
-                    {
-                        label: title,
-                        fill: false,
-                        borderWidth: 1,
-                        pointRadius: 2,
-                        backgroundColor: randomColor,
-                        borderColor: randomColor,
-                        data: sensorData
-                    }
-                ]
-            },
             options: {
                 responsive: true,
                 legend: {
@@ -52,7 +26,7 @@ var ChartAQI = function () {
                     xAxes: [{
                         type: 'time',
                         time: {
-                            tooltipFormat: 'MMM DD h:mm a'
+                            tooltipFormat: 'M/D/YYYY, h:mm:ss A'
                         },
                         scaleLabel: {
                             display: false,
@@ -99,6 +73,42 @@ var ChartAQI = function () {
         return false;
     }
 
+    this.onSensorData = function (feeds, title, isCustom) {
+        var data = [];
+
+        for (var i in feeds) {
+            var feed = feeds[i];
+            var val = 0;
+
+            if (isCustom) {
+                // already calculated
+                val = parseFloat(feed.field4).toFixed(2);
+            } else {
+                // raw data from a PurpleAir sensor
+                val = CalculateAQI.getPM25AQI(parseFloat(feed.field8)).toFixed(2);
+            }
+
+            data.push({
+                x: new Date(feed.created_at),
+                y: val
+            });
+        }
+
+        var randomColor = inst.getRandomColor();
+
+        myChart.data.datasets.push({
+            label: title,
+            fill: false,
+            borderWidth: 1,
+            pointRadius: 3,
+            backgroundColor: randomColor,
+            borderColor: randomColor,
+            data: data
+        });
+
+        myChart.update();
+    }
+
     this.onPurpleAirData = function (result) {
         var numResults = this.getResults();
         var endpoint = this.getThingSpeakEndpoint(result.THINGSPEAK_PRIMARY_ID, result.THINGSPEAK_PRIMARY_ID_READ_KEY, numResults);
@@ -108,32 +118,10 @@ var ChartAQI = function () {
 
         xhr.onload = function () {
             var json = JSON.parse(xhr.responseText);
-            var data = [];
-
-            for (var i in json.feeds) {
-                var feed = json.feeds[i];
-                var val = parseFloat(feed.field8);
-
-                data.push({
-                    x: new Date(feed.created_at),
-                    y: CalculateAQI.getPM25AQI(val)
-                });
+            
+            if (json.feeds) {
+                inst.onSensorData(json.feeds, 'PurpleAir / ' + result.Label);
             }
-
-            var randomColor = inst.getRandomColor();
-
-            myChart.data.datasets.push({
-                label: 'PurpleAir / ' + result.Label,
-                id: result.ID,
-                fill: false,
-                borderWidth: 1,
-                pointRadius: 2,
-                backgroundColor: randomColor,
-                borderColor: randomColor,
-                data: data
-            });
-
-            myChart.update();
         }
 
         xhr.onerror = function (e) {
@@ -153,7 +141,6 @@ var ChartAQI = function () {
             var json = JSON.parse(xhr.responseText);
             if (!json.results) return;
 
-            console.log(json);
             inst.onPurpleAirData(json.results[0]);
         }
 
@@ -185,7 +172,6 @@ var ChartAQI = function () {
 
         if (single) {
             // trim first value off sensorData
-            // sensorData.removeRow(0);
         } else {
             results = this.getResults();
 
@@ -201,20 +187,23 @@ var ChartAQI = function () {
 
         xhr.onload = function () {
             var json = JSON.parse(xhr.responseText);
-
+            
             if (!json.feeds) {
                 console.log(json);
                 latest.innerHTML = '<h1>API error</h1>';
                 return;
             }
 
-            // chart sensor data
-            inst.drawChart(json.channel.name, json.feeds);
+            // graph sensor data
+            console.log(json);
+            inst.initChart();
+            inst.onSensorData(json.feeds, json.channel.name, true);
 
+            // update latest
             var latestData = json.feeds[json.feeds.length - 1];
             inst.updateLatest(latestData);
 
-            // add PurpleAir to chart
+            // graph any purpleair sensors
             for (var i in channel.purpleAirSensorIds) {
                 inst.getPurpleAirData(channel.purpleAirSensorIds[i]);
             }
