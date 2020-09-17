@@ -35,7 +35,6 @@ var ChartAQI = function () {
                         }
                     }],
                     yAxes: [{
-                        
                         scaleLabel: {
                             display: true,
                             fontStyle: 'bold',
@@ -45,17 +44,6 @@ var ChartAQI = function () {
                 }
             }
         });
-    }
-
-    this.getRandomColor = function () {
-        var letters = '0123456789ABCDEF'.split('');
-        var color = '#';
-        
-        for (var i = 0; i < 6; i++ ) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-
-        return color;
     }
 
     this.getQueryVariable = function (variable) {
@@ -71,6 +59,14 @@ var ChartAQI = function () {
         }
 
         return false;
+    }
+
+    this.getRandomColor = function (alpha) {
+        var ran = function () {
+            return Math.round(Math.random() * 255);
+        }
+
+        return 'rgba(' + ran() + ', ' + ran() + ', ' + ran() + ', ' + alpha + ')';
     }
 
     this.onSensorData = function (feeds, title, isCustom) {
@@ -94,18 +90,23 @@ var ChartAQI = function () {
             });
         }
 
-        var randomColor = inst.getRandomColor();
-
-        myChart.data.datasets.push({
+        var border = isCustom ? 3 : 2;
+        var color = isCustom ? 'black' : this.getRandomColor(.3);
+        
+        var myData = {
             label: title,
             fill: false,
-            borderWidth: 1,
-            pointRadius: 3,
-            backgroundColor: randomColor,
-            borderColor: randomColor,
+            borderWidth: border,
+            pointRadius: 7,
+            backgroundColor: color,
+            borderColor: color,
+            pointHoverBackgroundColor: color,
+            pointBackgroundColor: 'rgba(0,0,0,0)',
+            pointBorderColor: 'rgba(0,0,0,0)',
             data: data
-        });
+        };
 
+        myChart.data.datasets.push(myData);
         myChart.update();
     }
 
@@ -187,26 +188,19 @@ var ChartAQI = function () {
 
         xhr.onload = function () {
             var json = JSON.parse(xhr.responseText);
+            console.log(json);
             
             if (!json.feeds) {
-                console.log(json);
                 latest.innerHTML = '<h1>API error</h1>';
                 return;
             }
 
             // graph sensor data
-            console.log(json);
-            inst.initChart();
             inst.onSensorData(json.feeds, json.channel.name, true);
 
             // update latest
             var latestData = json.feeds[json.feeds.length - 1];
             inst.updateLatest(latestData);
-
-            // graph any purpleair sensors
-            for (var i in channel.purpleAirSensorIds) {
-                inst.getPurpleAirData(channel.purpleAirSensorIds[i]);
-            }
         }
 
         xhr.onerror = function (e) {
@@ -229,7 +223,13 @@ var ChartAQI = function () {
             }
         }
 
+        this.initChart();
         this.getData();
+
+        // graph any purpleair sensors
+        for (var i in channel.purpleAirSensorIds) {
+            this.getPurpleAirData(channel.purpleAirSensorIds[i]);
+        }
     }
 
     this.initialize();
