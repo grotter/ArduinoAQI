@@ -13,7 +13,7 @@ This device continuously monitors atmospheric particulate matter. It sends senso
 * [Arduino_JSON](https://github.com/arduino-libraries/Arduino_JSON)
 * fu-hsi‘s [library](https://github.com/fu-hsi/PMS) for Plantower PMS x003 family sensors
 * bremme‘s [library](https://github.com/bremme/arduino-tm1637) for controlling TM1637 display modules
-* mathwork‘s [ThingSpeak library](https://github.com/mathworks/thingspeak-arduino)
+* mathwork‘s [ThingSpeak library](https://github.com/mathworks/thingspeak-arduino) – note: latest version is buggy, use [release v1.4.3](https://github.com/mathworks/thingspeak-arduino/releases/tag/1.4.3) 
 * madleech‘s [Button library](https://github.com/madleech/Button)
 
 ## Usage
