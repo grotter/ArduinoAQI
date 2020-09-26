@@ -43,6 +43,8 @@ class ArduinoAQIData {
     void _reconnectWifi();
     void _saveWifiCredentials();
     void _loadThingspeakConfig();
+    bool _fetchThingspeakConfig();
+    void _setDefaultThingspeakConfig();
     bool _setThingspeakConfig(String json);
     bool _isNull(int loc);
 };
