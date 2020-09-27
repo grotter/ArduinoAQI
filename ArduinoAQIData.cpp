@@ -234,6 +234,16 @@ void ArduinoAQIData::_loadThingspeakConfig() {
   _isRegistered = false;
   ThingSpeak.begin(_client);
 
+  if (!_fetchThingspeakConfig()) {
+    _setDefaultThingspeakConfig();
+  }
+}
+
+bool ArduinoAQIData::_fetchThingspeakConfig() {
+  if (THINGSPEAK_REGISTRY_CHANNEL_NUMBER == 0) {
+    Serial.println("No ThingSpeak registration channel configured");
+    return false;
+  }
   String json = ThingSpeak.readRaw(THINGSPEAK_REGISTRY_CHANNEL_NUMBER, String("/feeds/?results=8000"), THINGSPEAK_REGISTRY_API_KEY);
   int statusCode = ThingSpeak.getLastReadStatus();
   
@@ -241,12 +251,22 @@ void ArduinoAQIData::_loadThingspeakConfig() {
     if (_setThingspeakConfig(json)) {
       _isRegistered = true;
       Serial.println("ThingSpeak registration complete.");
+      return true;
     } else {
       Serial.println("ThingSpeak registration failed!");
     }
   } else {
-    Serial.println("Failed to load ThingSpeak config!");
+    Serial.println("Failed to load ThingSpeak config from channel " + String(THINGSPEAK_REGISTRY_CHANNEL_NUMBER) +
+                   "! Error code: " + String(statusCode));
   }
+  return false;
+}
+
+void ArduinoAQIData::_setDefaultThingspeakConfig() {
+  Serial.println("Using default ThingSpeak channel " + String(THINGSPEAK_DEFAULT_DATA_CHANNEL_NUMBER));
+  _thingspeakChannelId = THINGSPEAK_DEFAULT_DATA_CHANNEL_NUMBER;
+  _thingspeakWriteKey = THINGSPEAK_DEFAULT_DATA_WRITE_API_KEY;
+  _isRegistered = true;
 }
 
 bool ArduinoAQIData::_setThingspeakConfig(String json) {
