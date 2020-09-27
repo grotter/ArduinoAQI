@@ -16,6 +16,25 @@ This device continuously monitors atmospheric particulate matter. It sends senso
 * mathwork‘s [ThingSpeak library](https://github.com/mathworks/thingspeak-arduino) – note: latest version is buggy, use [release v1.4.3](https://github.com/mathworks/thingspeak-arduino/releases/tag/1.4.3) 
 * madleech‘s [Button library](https://github.com/madleech/Button)
 
+## Configuration
+
+ArduinoAQI uses ThingSpeak for both uploading sensor data and for reading configuration. You will need a [ThingSpeak](https://thingspeak.com/) account and least two channels: a registration channel to store configuration and a data channel to write sensor data to. The registration channel should have three fields:
+
+1. Device MAC Address
+2. Data Channel ID
+3. Data Channel Write API Key
+
+The data channel should have four fields:
+
+1. PM 1.0 (µg/m³)
+2. PM 2.5 (µg/m³)
+3. PM 10.0 (µg/m³)
+4. AQI
+
+You will need to upload or import data into the registration channel, with one data point per device containing the desired data channel ID and corresponding Write API Key.
+
+Copy `config.h` to `private/config.h` and fill in at least `THINGSPEAK_REGISTRY_CHANNEL_NUMBER` and `THINGSPEAK_REGISTRY_API_KEY` with the ID of the ThingSpeak registration channel ID and corresponding *Read* API Key.
+
 ## Usage
 
 To setup wifi connectivity, the device will create an *ArduinoAQI Setup* access point when first run. Connect to this network with a phone or computer to set your wifi credentials.
