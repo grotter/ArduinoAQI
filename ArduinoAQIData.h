@@ -11,6 +11,10 @@
 #include "src/WiFiManager/WiFiManager.h"
 #include "private/config.h"
 
+#ifndef ACCESS_POINT_PASSWORD
+# define ACCESS_POINT_PASSWORD NULL
+#endif
+
 struct Credentials {
   String ssid;
   String password;
