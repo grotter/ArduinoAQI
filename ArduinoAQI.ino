@@ -78,11 +78,8 @@ bool wasWifiModeDisabled() {
   return disableWifi == 1;
 }
 
-char* getNumberWithLeadingZeros(long num, int displayLength) {
-  char buffer[displayLength];
-  String pattern = "%0" + String(displayLength) + "d";
-  sprintf(buffer, pattern.c_str(), num);
-  
+char *getNumberWithLeadingZeros(long num, char *buffer, int displayLength) {
+  snprintf(buffer, ((size_t) displayLength) + 1, "%0*ld", displayLength, num);
   return buffer;
 }
 
@@ -181,7 +178,8 @@ void processSensorData(bool trace) {
     float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
     
     // display realtime unaveraged AQI
-    setDisplay(getNumberWithLeadingZeros(round(aqi), DISPLAY_LENGTH));
+    char displayBuffer[DISPLAY_LENGTH + 1];
+    setDisplay(getNumberWithLeadingZeros(round(aqi), displayBuffer, DISPLAY_LENGTH));
     
     if (!isWifiMode) return;
 
