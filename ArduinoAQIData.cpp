@@ -17,7 +17,7 @@ void ArduinoAQIData::begin() {
     Serial.println("WiFi config saved");
   });
   
-  _wifiManager.autoConnect(ACCESS_POINT);
+  _wifiManager.autoConnect(ACCESS_POINT, ACCESS_POINT_PASSWORD);
   
   _onWifiConnect();
 }

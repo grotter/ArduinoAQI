@@ -1,4 +1,5 @@
 #define ACCESS_POINT "ArduinoAQI Setup"
+#define ACCESS_POINT_PASSWORD NULL // non-NULL string of length 8-63 bytes sets a password to enable WPA2 encryption
 #define THINGSPEAK_REGISTRY_CHANNEL_NUMBER 0
 #define THINGSPEAK_REGISTRY_API_KEY ""
 #define THINGSPEAK_DEFAULT_DATA_CHANNEL_NUMBER 0
