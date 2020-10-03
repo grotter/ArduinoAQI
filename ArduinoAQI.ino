@@ -5,6 +5,8 @@
 #include "ArduinoAQIData.h"
 #include "CalculateAQI.h"
 
+static const uint16_t PMS_TIMEOUT_MS = 2000;
+
 Button resetButton(PIN_RESET);
 SevenSegmentSnake display(PIN_LED_CLK, PIN_LED_DIO);
 
@@ -76,11 +78,8 @@ bool wasWifiModeDisabled() {
   return disableWifi == 1;
 }
 
-char* getNumberWithLeadingZeros(long num, int displayLength) {
-  char buffer[displayLength];
-  String pattern = "%0" + String(displayLength) + "d";
-  sprintf(buffer, pattern.c_str(), num);
-  
+char *getNumberWithLeadingZeros(long num, char *buffer, int displayLength) {
+  snprintf(buffer, ((size_t) displayLength) + 1, "%0*ld", displayLength, num);
   return buffer;
 }
 
@@ -107,9 +106,14 @@ void clearDisplay() {
   display.print("----");
 }
 
+void setDisplay(const char *text) {
+  display.clear();
+  display.print(text);
+}
+
 void onAPMode(WiFiManager *myWiFiManager) {
   Serial.println("Creating access point: " + myWiFiManager->getConfigPortalSSID());
-  clearDisplay();
+  setDisplay("conn");
 }
 
 void connectWifi() {
@@ -156,7 +160,7 @@ unsigned long getRateLimitSeconds() {
 }
 
 void processSensorData(bool trace) {
-  if (pms.read(pmsData)) {
+  if (pms.readUntil(pmsData, PMS_TIMEOUT_MS)) {
     if (trace) {
       Serial.print("PM 1.0 (ug/m3): ");
       Serial.println(pmsData.PM_AE_UG_1_0);
@@ -174,8 +178,8 @@ void processSensorData(bool trace) {
     float aqi = CalculateAQI::getPM25AQI(pmsData.PM_AE_UG_2_5);
     
     // display realtime unaveraged AQI
-    display.clear();
-    display.print(getNumberWithLeadingZeros(round(aqi), DISPLAY_LENGTH));
+    char displayBuffer[DISPLAY_LENGTH + 1];
+    setDisplay(getNumberWithLeadingZeros(round(aqi), displayBuffer, DISPLAY_LENGTH));
     
     if (!isWifiMode) return;
 
@@ -198,6 +202,8 @@ void processSensorData(bool trace) {
     resetSensorAverages();
   
     lastDataSend = millis();
+  } else {
+    setDisplay("err");
   }
 }
 
