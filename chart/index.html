@@ -9,7 +9,8 @@
             body {
                 font-family: 'Helvetica', sans-serif;
                 margin: 0;
-                padding: 0;
+                padding: 20px;
+                padding-top: 30px;
             }
 
             h1 {
@@ -22,10 +23,15 @@
             }
 
             #latest {
+                position: absolute;
+                top: 0;
+                right: 0;
                 padding: 10px;
+                background-color: #ffffff;
             }
 
             #latest p, #latest h2, #latest h1 {
+                text-align: right;
                 margin: 0;
                 padding: 0;
             }
@@ -34,15 +40,17 @@
         
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+        <script type="text/javascript" src="calculateaqi.js"></script>
+        <script type="text/javascript" src="chartaqi.js"></script>
     </head>
 
     <body>
         <div id="latest"></div>
         <canvas id="chart"></canvas>
 
-        <script type="text/javascript" src="calculateaqi.js"></script>
-        <script type="text/javascript" src="chartaqi.js"></script>
-        <script> var foo = new ChartAQI(); </script>
+        <script>
+            var foo = new ChartAQI();
+        </script>
     </body>
 
 </html>

@@ -2,11 +2,11 @@ var ChartAQI = function () {
     var inst = this;
     var myChart;
     var latest = document.getElementById('latest');
+    var colors = ['black', 'red', 'blue', 'green', 'orange', 'purple'];
 
-    var channel = {
-        id: 0,
-        key: '',
-        purpleAirSensorIds: []
+    var sensors = {
+        custom: [],
+        purpleair: []
     };
 
     this.updateLatest = function (data) {
@@ -19,8 +19,9 @@ var ChartAQI = function () {
             type: 'line',
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 legend: {
-                    position: 'right'
+                    position: 'bottom'
                 },
                 scales: {
                     xAxes: [{
@@ -69,7 +70,8 @@ var ChartAQI = function () {
         return 'rgba(' + ran() + ', ' + ran() + ', ' + ran() + ', ' + alpha + ')';
     }
 
-    this.onSensorData = function (feeds, title, isCustom) {
+    this.onSensorData = function (feeds, title, order) {
+        var isCustom = typeof(order) != 'undefined';
         var data = [];
 
         for (var i in feeds) {
@@ -90,9 +92,14 @@ var ChartAQI = function () {
             });
         }
 
-        var border = isCustom ? 3 : 2;
-        var color = isCustom ? 'black' : this.getRandomColor(.3);
-        
+        var border = isCustom ? 3 : 1;
+        var color = this.getRandomColor(.75);
+
+        if (isCustom) {
+            var col = colors[order];
+            color = !col ? this.getRandomColor(1) : col;
+        }
+
         var myData = {
             label: title,
             fill: false,
@@ -168,21 +175,10 @@ var ChartAQI = function () {
         return parseInt(results);
     }
 
-    this.getData = function (single) {
-        var results = 1;
+    this.getCustomData = function (id, key, order) {
+        var results = this.getResults();
 
-        if (single) {
-            // trim first value off sensorData
-        } else {
-            results = this.getResults();
-
-            /*
-            // start polling for new data
-            setInterval(getData, 15000, true);
-            */
-        }
-
-        var endpoint = this.getThingSpeakEndpoint(channel.id, channel.key, results);
+        var endpoint = this.getThingSpeakEndpoint(id, key, results);
         var xhr = new XMLHttpRequest();
         xhr.open('GET', endpoint, true);
 
@@ -196,11 +192,13 @@ var ChartAQI = function () {
             }
 
             // graph sensor data
-            inst.onSensorData(json.feeds, json.channel.name, true);
+            inst.onSensorData(json.feeds, json.channel.name, order);
 
-            // update latest
-            var latestData = json.feeds[json.feeds.length - 1];
-            inst.updateLatest(latestData);
+            // update latest if first
+            if (order == 0) {
+                var latestData = json.feeds[json.feeds.length - 1];
+                inst.updateLatest(latestData);
+            }
         }
 
         xhr.onerror = function (e) {
@@ -212,23 +210,27 @@ var ChartAQI = function () {
     }
 
     this.initialize = function () {
-        for (var i in channel) {
+        for (var i in sensors) {
             var myVal = this.getQueryVariable(i);
             if (myVal === false) continue;
 
-            if (typeof(channel[i]) == 'object') {
-                channel[i] = myVal.split(',');
-            } else {
-                channel[i] = myVal;
-            }
+            sensors[i] = myVal.split(',');
         }
 
         this.initChart();
-        this.getData();
+        
+        // custom sensors
+        for (var i in sensors.custom) {
+            var sensor = sensors.custom[i].split('|');
+            if (typeof(sensor) != 'object') continue;
+            if (sensor.length < 2) continue;
 
-        // graph any purpleair sensors
-        for (var i in channel.purpleAirSensorIds) {
-            this.getPurpleAirData(channel.purpleAirSensorIds[i]);
+            this.getCustomData(sensor[0], sensor[1], i);
+        }
+
+        // purpleair sensors
+        for (var i in sensors.purpleair) {
+            this.getPurpleAirData(sensors.purpleair[i]);
         }
     }
 
