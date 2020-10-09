@@ -203,7 +203,7 @@ void processSensorData(bool trace) {
   
     lastDataSend = millis();
   } else {
-    setDisplay("err");
+    setDisplay("Err");
   }
 }
 

@@ -1,9 +1,9 @@
-# ArduinoAQI v1.0
+# ArduinoAQI
 
 This device continuously monitors atmospheric particulate matter. It sends sensor data to a registered ThingSpeak channel and displays realtime Air Quality Index [calculations](https://en.wikipedia.org/wiki/Air_quality_index#United_States). It was designed to be cheap and efficient.
 
 ## Hardware
-* ESP8266 Arduino-compatible microcontroller. I‘m using a [WeMos D1 R2](https://wiki.wemos.cc/products:d1:d1), pins will need to be transposed for other controllers
+* ESP8266 Arduino-compatible microcontroller. I‘m using a [WeMos D1 mini](https://www.wemos.cc/en/latest/d1/d1_mini.html), pins will need to be transposed for other controllers
 * [Plantower PMS5003](https://cdn-shop.adafruit.com/product-files/3686/plantower-pms5003-manual_v2-3.pdf) laser particle concentration sensor
 * [TM1637](http://dx.com/p/0-36-led-4-digit-display-module-for-arduino-black-blue-works-with-official-arduino-boards-254978) seven segment LED display module
 * A momentary switch for resetting the wifi configuration
@@ -41,8 +41,9 @@ To setup wifi connectivity, the device will create an *ArduinoAQI Setup* access 
 
 The device powers up in spinup mode for an initial ten seconds. Set wifi mode to **off** by clicking the reset button during spinup. In wifi mode, the reset button will clear your network credentials and relaunch the configuration access point.
 
-## Wiring Diagram
-![ArduinoAQI wiring diagram](ArduinoAQI_bb.png)
+## WeMos D1 mini Wiring Diagram
+![ArduinoAQI wiring diagram](ArduinoAQI_mini_bb.png)
+Also tested with a [WeMos D1 R2](ArduinoAQI_bb.png) development board. Note: Pin labels on the D1 R2 fritzing component are wonky.
 
 ## JavaScript Chart
 
