@@ -9,9 +9,11 @@ var ChartAQI = function () {
         purpleair: []
     };
 
-    this.updateLatest = function (data) {
+    this.updateLatest = function (data, name) {
         var lastReadDate = new Date(data.created_at);
-        latest.innerHTML = '<p><small>Latest read on ' + lastReadDate.toLocaleString('en-US') + '</small></p><h2>AQI ' + Math.round(parseFloat(data.field4)) + '</h2>';
+        latest.innerHTML = '<h3>' + name + '</h3>';
+        latest.innerHTML += '<p><small>Latest read on ' + lastReadDate.toLocaleString('en-US') + '</small></p>';
+        latest.innerHTML += '<h2>AQI ' + Math.round(parseFloat(data.field4)) + '</h2>';
     }
 
     this.initChart = function () {
@@ -197,7 +199,7 @@ var ChartAQI = function () {
             // update latest if first
             if (order == 0) {
                 var latestData = json.feeds[json.feeds.length - 1];
-                inst.updateLatest(latestData);
+                inst.updateLatest(latestData, json.channel.name);
             }
         }
 
