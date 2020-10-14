@@ -47,10 +47,6 @@ Also tested with a [WeMos D1 R2](ArduinoAQI_bb.png) development board. Note: Pin
 
 ## JavaScript Chart
 
-I've included a small graph built on [Chart.js](https://github.com/chartjs/Chart.js) to view your sensor data and any optional PurpleAir sensors. The graph uses the following GET variables:
-
-* `custom` - A comma-delimited collection of ThingSpeak sensor IDs and read API keys, e.g. custom=123|asdf,345|qwer
-* `purpleair` (optional) - A comma-delimited collection of PurpleAir sensor IDs
-* `results` (optional) - Number of results, defaults to 100
+See [ChartAQI](https://github.com/grotter/ChartAQI) to view your sensor data and any optional PurpleAir sensors.
 
 ### ♥
