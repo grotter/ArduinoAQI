@@ -280,7 +280,8 @@ bool ArduinoAQIData::_setThingspeakConfig(String json) {
     JSONVar feeds = JSON.parse(json.substring(from, to + 1));    
     if (JSON.typeof(feeds) != "array") return false;
 
-    Serial.println("Number of registered devices: " + String(feeds.length()));
+    numRegisteredDevices = feeds.length();
+    Serial.println("Number of registered devices: " + String(numRegisteredDevices));
     
     // iterate our ThingSpeak registration channel and match MAC addresses
     for (int i = 0; i < feeds.length(); i++) {
