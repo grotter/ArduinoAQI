@@ -1,4 +1,4 @@
-# ArduinoAQI WiFi Setup
+# ArduinoAQI new device setup
 
 1. Place sensor in range of your wifi router
 2. Connect sensor to power, wait about 30 seconds until display reads "conn"

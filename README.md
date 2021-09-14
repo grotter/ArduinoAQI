@@ -35,11 +35,15 @@ You will need to upload or import data into the registration channel, with one d
 
 Copy `config.h` to `private/config.h` and fill in at least `THINGSPEAK_REGISTRY_CHANNEL_NUMBER` and `THINGSPEAK_REGISTRY_API_KEY` with the ID of the ThingSpeak registration channel ID and corresponding *Read* API Key.
 
+You can use the shell command `addSensor.sh` to partially automate the creation and registration processes above.
+
 ## Usage
 
 To setup wifi connectivity, the device will create an *ArduinoAQI Setup* access point when first run. Connect to this network with a phone or computer to set your wifi credentials.
 
 The device powers up in spinup mode for an initial ten seconds. Set wifi mode to **off** by clicking the reset button during spinup. In wifi mode, the reset button will clear your network credentials and relaunch the configuration access point.
+
+View detailed [setup instructions](SetupInstructions.md) for a new device.
 
 ## WeMos D1 mini Wiring Diagram
 ![ArduinoAQI wiring diagram](ArduinoAQI_mini_bb.png)
