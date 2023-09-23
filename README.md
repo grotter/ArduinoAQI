@@ -53,4 +53,4 @@ Also tested with a [WeMos D1 R2](ArduinoAQI_bb.png) development board. Note: Pin
 
 See [ChartAQI](https://github.com/grotter/ChartAQI) to view your sensor data and any optional PurpleAir sensors.
 
-### ♥ Antifascist Science Club
+### 💨💨💨

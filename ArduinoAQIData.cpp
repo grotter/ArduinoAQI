@@ -4,7 +4,7 @@ ArduinoAQIData::ArduinoAQIData() {
   EEPROM.begin(512);
 }
 
-void ArduinoAQIData::begin() {
+void ArduinoAQIData::begin() {  
   Credentials myCredentials = getSavedCredentials();
   
   _wifiManager.setSavedSsid(myCredentials.ssid);
