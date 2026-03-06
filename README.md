@@ -18,7 +18,7 @@ This device continuously monitors atmospheric particulate matter. It sends senso
 
 ## Configuration
 
-ArduinoAQI uses ThingSpeak for both uploading sensor data and for reading configuration. You will need a [ThingSpeak](https://thingspeak.com/) account and least two channels: a registration channel to store configuration and a data channel to write sensor data to. The registration channel should have three fields:
+ArduinoAQI uses ThingSpeak for both uploading sensor data and for reading configuration. You will need a [ThingSpeak](https://thingspeak.com/) account and at least two channels: a registration channel to store configuration and a data channel to write sensor data to. The registration channel should have three fields:
 
 1. Device MAC Address
 2. Data Channel ID
